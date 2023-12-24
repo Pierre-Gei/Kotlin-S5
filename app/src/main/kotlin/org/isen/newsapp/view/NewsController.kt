@@ -7,8 +7,9 @@ class NewsController (val model: INewsModel){
     fun registerview(datatype: String="", v: INewsView) {
         views.add(v)
         if (datatype.isEmpty()) {
-            model.register(org.isen.newsapp.model.INewsModel.NEWS, v)
-            model.register(org.isen.newsapp.model.INewsModel.SOURCES, v)
+            model.register(INewsModel.NEWS_ALL, v)
+            model.register(INewsModel.NEWS_HEADLINES, v)
+            model.register(INewsModel.SOURCES, v)
         } else {
             model.register(datatype,v)
         }

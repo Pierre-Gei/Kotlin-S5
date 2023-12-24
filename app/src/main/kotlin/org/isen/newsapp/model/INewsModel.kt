@@ -1,6 +1,5 @@
 package org.isen.newsapp.model
 
-import org.isen.newsapp.view.INewsView
 import java.beans.PropertyChangeListener
 
 interface INewsModel {
@@ -10,6 +9,6 @@ interface INewsModel {
         const val SOURCES = "sources"
         //a checker
     }
-    fun register(datatype: String, listener: INewsView)
+    fun register(datatype: String, listener: PropertyChangeListener)
     fun unregister(listener: PropertyChangeListener)
 }

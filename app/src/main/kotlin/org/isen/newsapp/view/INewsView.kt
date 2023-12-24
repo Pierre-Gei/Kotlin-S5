@@ -1,6 +1,8 @@
 package org.isen.newsapp.view
 
-interface INewsView {
+import java.beans.PropertyChangeListener
+
+interface INewsView: PropertyChangeListener {
     fun display()
     fun close()
 }

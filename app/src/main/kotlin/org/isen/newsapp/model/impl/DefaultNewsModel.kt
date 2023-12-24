@@ -6,7 +6,6 @@ import kotlinx.coroutines.launch
 import org.apache.logging.log4j.kotlin.logger
 import org.isen.newsapp.model.INewsModel
 import org.isen.newsapp.model.data.ArticlesReq
-import org.isen.newsapp.view.INewsView
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
 import kotlin.properties.Delegates
@@ -18,7 +17,8 @@ class DefaultNewsModel : INewsModel {
 
     private var news: ArticlesReq? by Delegates.observable(null) {property, oldValue, newValue ->
         logger().info("news changed from $oldValue to $newValue")
-        TODO("implement notification to observer")
+        pcs.firePropertyChange(INewsModel.NEWS_HEADLINES, oldValue, newValue)
+        pcs.firePropertyChange(INewsModel.NEWS_ALL, oldValue, newValue)
     }
 
     private suspend fun fetchEverything(querry_args: String, API_KEY: String) {
@@ -64,11 +64,14 @@ class DefaultNewsModel : INewsModel {
             logger().error("type is not valid")
         }
     }
-    override fun register(datatype: String, listener: INewsView) {
-        TODO()
+
+    override fun register(datatype: String, listener: PropertyChangeListener) {
+        logger().info("registering listener")
+        pcs.addPropertyChangeListener(datatype, listener)
     }
 
     override fun unregister(listener: PropertyChangeListener) {
-        TODO()
+        logger().info("unregistering listener")
+        pcs.removePropertyChangeListener(listener)
     }
 }
