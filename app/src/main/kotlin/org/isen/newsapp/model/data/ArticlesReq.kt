@@ -9,8 +9,6 @@ data class ArticlesReq(val status: String, val totalResults: Int, val articles: 
     }
 }
 
-data class Articles(val articles: List<Article>)
-
 data class Article(
     val source: SourceArt,
     val author: String,

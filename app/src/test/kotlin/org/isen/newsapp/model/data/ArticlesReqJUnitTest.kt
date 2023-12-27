@@ -32,6 +32,7 @@ class ArticlesReqJUnitTest {
         val (request, response, result) ="https://newsapi.org/v2/top-headlines?country=fr&apiKey=d085fa05e7ca462c8bb0e770ec30f41e".httpGet().responseObject(ArticlesReq.Deserializer())
         val (articles, err) = result
         assert(err == null)
+        println("articles: $articles")
         if (articles != null) {
             assert(articles.articles[0].source.id == "google-news")
         }else{

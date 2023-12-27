@@ -6,6 +6,7 @@ import kotlinx.coroutines.launch
 import org.apache.logging.log4j.kotlin.logger
 import org.isen.newsapp.model.INewsModel
 import org.isen.newsapp.model.data.ArticlesReq
+import org.isen.newsapp.model.data.SourceReq
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
 import kotlin.properties.Delegates
@@ -19,6 +20,11 @@ class DefaultNewsModel : INewsModel {
         logger().info("news changed from $oldValue to $newValue")
         pcs.firePropertyChange(INewsModel.NEWS_HEADLINES, oldValue, newValue)
         pcs.firePropertyChange(INewsModel.NEWS_ALL, oldValue, newValue)
+    }
+
+    private var sources: SourceReq? by Delegates.observable(null) {property, oldValue, newValue ->
+        logger().info("sources changed from $oldValue to $newValue")
+        pcs.firePropertyChange(INewsModel.SOURCES, oldValue, newValue)
     }
 
     private suspend fun fetchEverything(querry_args: String, API_KEY: String) {
@@ -51,7 +57,7 @@ class DefaultNewsModel : INewsModel {
         }
     }
 
-    public fun fetchNews(querry_args: String, API_KEY: String, type: String) {
+    public override fun fetchNews(querry_args: String, API_KEY: String, type: String) {
         if (type == INewsModel.NEWS_ALL) {
             GlobalScope.launch {
                 fetchEverything(querry_args, API_KEY)
@@ -62,6 +68,22 @@ class DefaultNewsModel : INewsModel {
             }
         }else{
             logger().error("type is not valid")
+        }
+    }
+
+    public override fun fetchSources(querry_args: String, API_KEY: String) {
+        if (querry_args == "") {
+            logger().error("querry_args is empty")
+            return
+        }else if (API_KEY == "") {
+            logger().error("API_KEY is empty")
+            return
+        }
+        val (request, response, result) = "https://newsapi.org/v2/top-headlines/sources?$querry_args&apiKey=$API_KEY".httpGet().responseObject(SourceReq.Deserializer())
+        logger().info("Status code: ${response.statusCode}")
+        result.let { (soucesList, err) ->
+            sources = soucesList
+            println("sources: $sources")
         }
     }
 

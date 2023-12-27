@@ -9,7 +9,6 @@ data class SourceReq(val status: String, val sources: List<Source>) {
     }
 }
 
-data class SourceList(val sources: List<Source>)
 data class Source(
     val id: String,
     val name: String,
