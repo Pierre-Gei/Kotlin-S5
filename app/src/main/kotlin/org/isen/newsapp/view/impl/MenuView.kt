@@ -2,6 +2,8 @@ package org.isen.newsapp.view.impl
 
 import org.apache.logging.log4j.kotlin.logger
 import org.isen.newsapp.controller.MenuController
+import org.isen.newsapp.controller.NewsController
+import org.isen.newsapp.controller.SourcesController
 import org.isen.newsapp.view.INewsView
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -13,155 +15,370 @@ import javax.swing.*
 
 
 //classe principlae de l'app qui contient les 3 autres vues et qui permet de naviguer entre elles ainsi que de donner les paramètres de connexion à l'api
-class MenuView (val controller: MenuController, title: String="News App"): INewsView, ActionListener {
+class MenuView (val controller: MenuController, val sourceController: SourcesController, val newsController: NewsController, title: String="News App"): INewsView, ActionListener {
     companion object logging
 
-    private val frame : JFrame
+    private var frame: JFrame
+    private var countryList: JComboBox<String>? = null
+    private var categoryList: JComboBox<String>? = null
+    private var languageList: JComboBox<String>? = null
+    private var keyword: JTextField? = null
+    private var dynamicFieldsPanel: JPanel
+    private var fromDate: JTextField? = null
+    private var toDate: JTextField? = null
+    private var sortBy: JComboBox<String>? = null
+    var currentRequestType = ""
+
     init {
         frame = JFrame().apply {
-            isVisible = false
-            contentPane = makeGUI()
-            defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-            this.title = title
-            this.preferredSize = Dimension(800, 600)
-            this.pack()
+                    isVisible = false
+                    contentPane = makeGUI()
+                    defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
+                    this.title = title
+                    this.preferredSize = Dimension(800, 600)
+                    this.pack()
         }
         this.controller.registerViewToMenu(this)
+        dynamicFieldsPanel = JPanel()
+        dynamicFieldsPanel.layout = FlowLayout()
+        currentRequestType = "Headlines"
+        setDynamicParametersPanel(createHeadlinesParameters())
     }
-
     private fun makeGUI(): JPanel {
         val contentPane = JPanel()
         contentPane.layout = BorderLayout()
-        contentPane.add(createRequestTypeComboBox(), BorderLayout.NORTH)
-        contentPane.add(createButton(), BorderLayout.SOUTH)
+
+        val requestTypeComboBox = createRequestTypeComboBox()
+        if (requestTypeComboBox != null) {
+            contentPane.add(requestTypeComboBox, BorderLayout.NORTH)
+        }
+
+        val dynamicPanel = dynamicFieldsPanel
+        if (dynamicPanel != null) {
+            contentPane.add(dynamicPanel, BorderLayout.CENTER)
+        }
+
+        val button = createButton()
+        if (button != null) {
+            contentPane.add(button, BorderLayout.SOUTH)
+        }
+
         return contentPane
     }
 
-    //création du menu de navigation
     private fun createRequestTypeComboBox(): JPanel {
         val contentPane = JPanel()
         contentPane.layout = BorderLayout()
         contentPane.add(JLabel("Type de requête"), BorderLayout.NORTH)
         val requestTypeList = JComboBox<String>().apply {
-            addItem("Sources")
             addItem("Headlines")
             addItem("Everything")
+            addItem("Sources")
+            // Ajouter d'autres types de requête au besoin
             addActionListener(this@MenuView)
         }
+        //set default value
+        requestTypeList.selectedIndex = 0
         requestTypeList.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
         contentPane.add(requestTypeList, BorderLayout.CENTER)
         return contentPane
     }
+    private fun createEverythingParameters(): JPanel{
+// ... (autres initialisations)
 
-    //création des paramètres de la requête sources
+        // labels + comboboxes
+        dynamicFieldsPanel.removeAll()
+
+        // Initialiser les combobox si elles ne le sont pas déjà
+        if (languageList == null) {
+            languageList = JComboBox<String>().apply {
+                addItem("all")
+                addItem("ar")
+                addItem("de")
+                addItem("en")
+                addItem("es")
+                addItem("fr")
+                addItem("he")
+                addItem("it")
+                addItem("nl")
+                addItem("no")
+                addItem("pt")
+                addItem("ru")
+                addItem("se")
+                addItem("ud")
+                addItem("zh")
+                addActionListener(this@MenuView)
+            }
+        }
+
+        if (keyword == null){
+            keyword = JTextField().apply {
+                addActionListener(this@MenuView)
+            }
+        }
+
+        if (fromDate == null){
+            fromDate = JTextField().apply {
+                addActionListener(this@MenuView)
+            }
+        }
+        if (toDate == null){
+            //format = yyyy-mm-dd
+            toDate = JTextField().apply {
+                addActionListener(this@MenuView)
+            }
+        }
+
+        if (sortBy == null){
+            sortBy = JComboBox<String>().apply {
+                addItem("relevancy")
+                addItem("popularity")
+                addItem("publishedAt")
+                addActionListener(this@MenuView)
+            }
+        }
+
+        dynamicFieldsPanel.add(JLabel("Langue"))
+        dynamicFieldsPanel.add(languageList)
+        dynamicFieldsPanel.add(JLabel("Mot clé"))
+        dynamicFieldsPanel.add(keyword)
+        dynamicFieldsPanel.add(JLabel("Date de début"))
+        dynamicFieldsPanel.add(fromDate)
+        dynamicFieldsPanel.add(JLabel("Date de fin"))
+        dynamicFieldsPanel.add(toDate)
+        dynamicFieldsPanel.add(JLabel("Trier par"))
+        dynamicFieldsPanel.add(sortBy)
+        return dynamicFieldsPanel
+    }
+    private fun createHeadlinesParameters(): JPanel{
+        // ... (autres initialisations)
+
+        // labels + comboboxes
+        dynamicFieldsPanel.removeAll()
+
+        // Initialiser les combobox si elles ne le sont pas déjà
+        if (countryList == null) {
+            countryList = JComboBox<String>().apply {
+                addItem("all")
+                addItem("ae")
+                addItem("ar")
+                addItem("at")
+                addItem("au")
+                addItem("be")
+                addItem("bg")
+                addItem("br")
+                addItem("ca")
+                addItem("ch")
+                addItem("cn")
+                addItem("co")
+                addItem("cu")
+                addItem("cz")
+                addItem("de")
+                addItem("eg")
+                addItem("fr")
+                addItem("gb")
+                addItem("gr")
+                addItem("hk")
+                addItem("hu")
+                addItem("id")
+                addItem("ie")
+                addItem("il")
+                addItem("in")
+                addItem("it")
+                addItem("jp")
+                addItem("kr")
+                addItem("lt")
+                addItem("lv")
+                addItem("ma")
+                addItem("mx")
+                addItem("my")
+                addItem("ng")
+                addItem("nl")
+                addItem("no")
+                addItem("nz")
+                addItem("ph")
+                addItem("pl")
+                addItem("pt")
+                addItem("ro")
+                addItem("rs")
+                addItem("ru")
+                addItem("sa")
+                addItem("se")
+                addItem("sg")
+                addItem("si")
+                addItem("sk")
+                addItem("th")
+                addItem("tr")
+                addItem("tw")
+                addItem("ua")
+                addItem("us")
+                addItem("ve")
+                addItem("za")
+                addActionListener(this@MenuView)
+            }
+        }
+
+        if (categoryList == null) {
+            categoryList = JComboBox<String>().apply {
+                addItem("all")
+                addItem("business")
+                addItem("entertainment")
+                addItem("general")
+                addItem("health")
+                addItem("science")
+                addItem("sports")
+                addItem("technology")
+                addActionListener(this@MenuView)
+            }
+        }
+
+        if (languageList == null) {
+            languageList = JComboBox<String>().apply {
+                addItem("all")
+                addItem("ar")
+                addItem("de")
+                addItem("en")
+                addItem("es")
+                addItem("fr")
+                addItem("he")
+                addItem("it")
+                addItem("nl")
+                addItem("no")
+                addItem("pt")
+                addItem("ru")
+                addItem("se")
+                addItem("ud")
+                addItem("zh")
+                addActionListener(this@MenuView)
+            }
+        }
+
+        if (keyword == null){
+            keyword = JTextField().apply {
+                addActionListener(this@MenuView)
+            }
+        }
+
+        dynamicFieldsPanel.add(JLabel("Pays"))
+        dynamicFieldsPanel.add(countryList)
+        dynamicFieldsPanel.add(JLabel("Catégorie"))
+        dynamicFieldsPanel.add(categoryList)
+        dynamicFieldsPanel.add(JLabel("Langue"))
+        dynamicFieldsPanel.add(languageList)
+        dynamicFieldsPanel.add(JLabel("Mot clé"))
+        dynamicFieldsPanel.add(keyword)
+        return dynamicFieldsPanel
+    }
     private fun createSourcesParameters(): JPanel {
-        val contentPane = JPanel()
-        contentPane.layout = FlowLayout()
-        val countryList = JComboBox<String>().apply {
-            //possibles values for the country parameter : ae ar at au be bg br ca ch cn co cu cz de eg fr gb gr hk hu id ie il in it jp kr lt lv ma mx my ng nl no nz ph pl pt ro rs ru sa se sg si sk th tr tw ua us ve za + all
-            addItem("all")
-            addItem("ae")
-            addItem("ar")
-            addItem("at")
-            addItem("au")
-            addItem("be")
-            addItem("bg")
-            addItem("br")
-            addItem("ca")
-            addItem("ch")
-            addItem("cn")
-            addItem("co")
-            addItem("cu")
-            addItem("cz")
-            addItem("de")
-            addItem("eg")
-            addItem("fr")
-            addItem("gb")
-            addItem("gr")
-            addItem("hk")
-            addItem("hu")
-            addItem("id")
-            addItem("ie")
-            addItem("il")
-            addItem("in")
-            addItem("it")
-            addItem("jp")
-            addItem("kr")
-            addItem("lt")
-            addItem("lv")
-            addItem("ma")
-            addItem("mx")
-            addItem("my")
-            addItem("ng")
-            addItem("nl")
-            addItem("no")
-            addItem("nz")
-            addItem("ph")
-            addItem("pl")
-            addItem("pt")
-            addItem("ro")
-            addItem("rs")
-            addItem("ru")
-            addItem("sa")
-            addItem("se")
-            addItem("sg")
-            addItem("si")
-            addItem("sk")
-            addItem("th")
-            addItem("tr")
-            addItem("tw")
-            addItem("ua")
-            addItem("us")
-            addItem("ve")
-            addItem("za")
-            addActionListener(this@MenuView)
+        // ... (autres initialisations)
+
+        // labels + comboboxes
+        dynamicFieldsPanel.removeAll()
+
+        // Initialiser les combobox si elles ne le sont pas déjà
+        if (countryList == null) {
+            countryList = JComboBox<String>().apply {
+                addItem("all")
+                addItem("ae")
+                addItem("ar")
+                addItem("at")
+                addItem("au")
+                addItem("be")
+                addItem("bg")
+                addItem("br")
+                addItem("ca")
+                addItem("ch")
+                addItem("cn")
+                addItem("co")
+                addItem("cu")
+                addItem("cz")
+                addItem("de")
+                addItem("eg")
+                addItem("fr")
+                addItem("gb")
+                addItem("gr")
+                addItem("hk")
+                addItem("hu")
+                addItem("id")
+                addItem("ie")
+                addItem("il")
+                addItem("in")
+                addItem("it")
+                addItem("jp")
+                addItem("kr")
+                addItem("lt")
+                addItem("lv")
+                addItem("ma")
+                addItem("mx")
+                addItem("my")
+                addItem("ng")
+                addItem("nl")
+                addItem("no")
+                addItem("nz")
+                addItem("ph")
+                addItem("pl")
+                addItem("pt")
+                addItem("ro")
+                addItem("rs")
+                addItem("ru")
+                addItem("sa")
+                addItem("se")
+                addItem("sg")
+                addItem("si")
+                addItem("sk")
+                addItem("th")
+                addItem("tr")
+                addItem("tw")
+                addItem("ua")
+                addItem("us")
+                addItem("ve")
+                addItem("za")
+                addActionListener(this@MenuView)
+            }
         }
-        val categoryList = JComboBox<String>().apply {
-            //possible values for the category parameter : business entertainment general health science sports technology + all
-            addItem("all")
-            addItem("business")
-            addItem("entertainment")
-            addItem("general")
-            addItem("health")
-            addItem("science")
-            addItem("sports")
-            addItem("technology")
-            addActionListener(this@MenuView)
+
+        if (categoryList == null) {
+            categoryList = JComboBox<String>().apply {
+                addItem("all")
+                addItem("business")
+                addItem("entertainment")
+                addItem("general")
+                addItem("health")
+                addItem("science")
+                addItem("sports")
+                addItem("technology")
+                addActionListener(this@MenuView)
+            }
         }
-        val languageList = JComboBox<String>().apply {
-            //possible values for the language parameter : ar de en es fr he it nl no pt ru se ud zh + all
-            addItem("all")
-            addItem("ar")
-            addItem("de")
-            addItem("en")
-            addItem("es")
-            addItem("fr")
-            addItem("he")
-            addItem("it")
-            addItem("nl")
-            addItem("no")
-            addItem("pt")
-            addItem("ru")
-            addItem("se")
-            addItem("ud")
-            addItem("zh")
-            addActionListener(this@MenuView)
+
+        if (languageList == null) {
+            languageList = JComboBox<String>().apply {
+                addItem("all")
+                addItem("ar")
+                addItem("de")
+                addItem("en")
+                addItem("es")
+                addItem("fr")
+                addItem("he")
+                addItem("it")
+                addItem("nl")
+                addItem("no")
+                addItem("pt")
+                addItem("ru")
+                addItem("se")
+                addItem("ud")
+                addItem("zh")
+                addActionListener(this@MenuView)
+            }
         }
-        //add labels
-        countryList.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        categoryList.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        languageList.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        countryList.setSelectedIndex(0)
-        categoryList.setSelectedIndex(0)
-        languageList.setSelectedIndex(0)
-        //labels + comboboxes
-        contentPane.add(JLabel("Pays"))
-        contentPane.add(countryList)
-        contentPane.add(JLabel("Catégorie"))
-        contentPane.add(categoryList)
-        contentPane.add(JLabel("Langue"))
-        contentPane.add(languageList)
-        return contentPane
+
+        dynamicFieldsPanel.add(JLabel("Pays"))
+        dynamicFieldsPanel.add(countryList)
+        dynamicFieldsPanel.add(JLabel("Catégorie"))
+        dynamicFieldsPanel.add(categoryList)
+        dynamicFieldsPanel.add(JLabel("Langue"))
+        dynamicFieldsPanel.add(languageList)
+        return dynamicFieldsPanel
     }
 
 
@@ -196,46 +413,58 @@ class MenuView (val controller: MenuController, title: String="News App"): INews
     }
 
     override fun actionPerformed(e: ActionEvent?) {
-        if (e != null) {
-            // Selection of the type of request
+        if (e != null && frame!=null) {
+            //displays the correct view depending on the selected value in the menu
             if (e.source is JComboBox<*>) {
-                logger().info("actionPerformed: ${e.actionCommand}")
+                logger().info("actionPerformed: ${(e.source as JComboBox<*>).selectedItem}")
+                currentRequestType = (e.source as JComboBox<*>).selectedItem.toString()
                 when ((e.source as JComboBox<*>).selectedItem) {
-                    "Sources" -> {
-                        val sourcesParameters = createSourcesParameters()
-                        frame.contentPane.add(sourcesParameters, BorderLayout.CENTER)
-                    }
-
-                    "Headlines" -> {
-                        // Handle "Headlines" case
-                    }
-
-                    "Everything" -> {
-                        // Handle "Everything" case
-                    }
+                    "Sources" ->  setDynamicParametersPanel(createSourcesParameters())
+                    "Headlines" -> setDynamicParametersPanel(createHeadlinesParameters())
+                    "Everything" -> setDynamicParametersPanel(createEverythingParameters())
+                    // Ajoutez d'autres cas pour les autres types de requête
                 }
+                frame.pack()
             }
-            //observation des changements de paramètres pour les garder a jour et les envoyer a la requête lors de la validation
-            if (e.source is JComboBox<*>) {
-                val selctedComboBox = e.source as JComboBox<*>
-                when (selctedComboBox.selectedItem) {
-                    "Sources" -> {
-                        val country = selctedComboBox.selectedItem
-                        val category = selctedComboBox.selectedItem
-                        val language = selctedComboBox.selectedItem
-                        controller.setParameters(country.toString(), category.toString(), language.toString())
+            // launches the request
+            if (e.source is JButton) {
+                logger().info("actionPerformed: ${e.actionCommand}")
+                if (e.actionCommand == "Valider") {
+                    // Récupérer les valeurs sélectionnées dans les combobox
+                    var country = countryList?.selectedItem.toString() ?: ""
+                    var category = categoryList?.selectedItem.toString() ?: ""
+                    var language = languageList?.selectedItem.toString() ?: ""
+                    val keyword = keyword?.text ?: ""
+                    val from = fromDate?.text ?: ""
+                    val to = toDate?.text ?: ""
+                    val sort = sortBy?.selectedItem.toString() ?: ""
+                    if (country == "all") country = ""
+                    if (category == "all") category = ""
+                    if (language == "all") language = ""
+                    // Appeler la méthode dans le contrôleur avec les paramètres
+                    println( currentRequestType )
+                    if (currentRequestType == "Sources") {
+                        sourceController.getSources("country=$country&category=$category&language=$language", "d085fa05e7ca462c8bb0e770ec30f41e")
+                        println( "country=$country&category=$category&language=$language")
                     }
-
-                    "Headlines" -> {
-                        // Handle "Headlines" case
+                    if (currentRequestType == "Everything") {
+                        newsController.getnewsall("q=$keyword&from=$from&to=$to&sortBy=$sort&language=$language", "d085fa05e7ca462c8bb0e770ec30f41e")
+                        println( "q=$keyword&from=$from&to=$to&sortBy=$sort&language=$language")
                     }
-
-                    "Everything" -> {
-                        // Handle "Everything" case
+                    if (currentRequestType == "Headlines") {
+                        newsController.getnewsheadlines("country=$country&category=$category&language=$language&q=$keyword", "d085fa05e7ca462c8bb0e770ec30f41e")
+                        println( "country=$country&category=$category&language=$language&q=$keyword")
                     }
+                    // Ajoutez d'autres conditions pour les autres types de requête
                 }
             }
         }
     }
-
+    private fun setDynamicParametersPanel(panel: JPanel) {
+        // Replace only the dynamic parameters panel
+        frame.contentPane.remove(dynamicFieldsPanel)
+        dynamicFieldsPanel = panel
+        frame.contentPane.add(dynamicFieldsPanel, BorderLayout.CENTER)
+        frame.pack()
+    }
 }

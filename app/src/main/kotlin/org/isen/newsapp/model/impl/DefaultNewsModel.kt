@@ -37,6 +37,7 @@ class DefaultNewsModel : INewsModel {
         }
         val (request, response, result) = "https://newsapi.org/v2/everything?$querry_args&apiKey=$API_KEY".httpGet().responseObject(ArticlesReq.Deserializer())
         logger().info("Status code: ${response.statusCode}")
+        println( "result: $result")
         result.let { (articles, err) ->
             news = articles
         }
@@ -52,6 +53,7 @@ class DefaultNewsModel : INewsModel {
         }
         val (request, response, result) = "https://newsapi.org/v2/top-headlines?$querry_args&apiKey=$API_KEY".httpGet().responseObject(ArticlesReq.Deserializer())
         logger().info("Status code: ${response.statusCode}")
+        println( "result: $result")
         result.let { (articles, err) ->
             news = articles
         }

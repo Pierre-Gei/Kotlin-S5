@@ -4,6 +4,8 @@
 package org.isen.newsapp
 
 import org.isen.newsapp.controller.MenuController
+import org.isen.newsapp.controller.NewsController
+import org.isen.newsapp.controller.SourcesController
 import org.isen.newsapp.model.INewsModel
 import org.isen.newsapp.model.impl.DefaultNewsModel
 import org.isen.newsapp.view.impl.MenuView
@@ -11,7 +13,9 @@ import org.isen.newsapp.view.impl.MenuView
 fun main() {
     val newsModel : INewsModel = DefaultNewsModel()
     val menuController = MenuController(newsModel)
-    val MenuView = MenuView(menuController, "News App")
+    val sourcesController = SourcesController(newsModel)
+    val newsController = NewsController(newsModel)
+    val MenuView = MenuView(menuController, sourcesController, newsController, "NewsApp")
 
     menuController.displayview()
     //newsController1.displayview()
