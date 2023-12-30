@@ -6,10 +6,13 @@ import org.isen.newsapp.controller.NewsController
 import org.isen.newsapp.controller.SourcesController
 import org.isen.newsapp.view.INewsView
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
+import java.awt.event.FocusEvent
+import java.awt.event.FocusListener
 import java.beans.PropertyChangeEvent
 import javax.swing.*
 
@@ -35,7 +38,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                     contentPane = makeGUI()
                     defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
                     this.title = title
-                    this.preferredSize = Dimension(800, 600)
+                    this.preferredSize = Dimension(1000,800)
                     this.pack()
         }
         this.controller.registerViewToMenu(this)
@@ -83,13 +86,46 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         contentPane.add(requestTypeList, BorderLayout.CENTER)
         return contentPane
     }
-    private fun createEverythingParameters(): JPanel{
-// ... (autres initialisations)
+    private fun resetEverythingParameters(){
+        countryList = null
+        categoryList = null
+        languageList = null
+        keyword = null
+        fromDate = null
+        toDate = null
+        sortBy = null
+    }
+    private fun createKeywordField(){
+        if (keyword == null) {
+            keyword = JTextField("Mot clé").apply {
+                preferredSize = Dimension(100, 30)
+                addFocusListener(PlaceholderFocusListener("Mot clé", this))
+                addActionListener(this@MenuView)
+            }
+        }
+    }
+    private fun createFromDateField(){
+        if (fromDate == null){
+            //format = yyyy-mm-dd
+            fromDate = JTextField("yyyy-mm-dd").apply {
+                preferredSize = Dimension(100, 30)
+                addFocusListener(PlaceholderFocusListener("yyyy-mm-dd", this))
+                addActionListener(this@MenuView)
+            }
+        }
+    }
+    private fun createToDateField(){
+        if (toDate == null){
+            //format = yyyy-mm-dd
+            toDate = JTextField("yyyy-mm-dd").apply {
+                preferredSize = Dimension(100, 30)
+                addFocusListener(PlaceholderFocusListener("yyyy-mm-dd", this))
+                addActionListener(this@MenuView)
+            }
+        }
+    }
 
-        // labels + comboboxes
-        dynamicFieldsPanel.removeAll()
-
-        // Initialiser les combobox si elles ne le sont pas déjà
+    private fun createLanguageList(): JComboBox<String>{
         if (languageList == null) {
             languageList = JComboBox<String>().apply {
                 addItem("all")
@@ -110,25 +146,88 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                 addActionListener(this@MenuView)
             }
         }
-
-        if (keyword == null){
-            keyword = JTextField().apply {
+        return languageList!!
+    }
+    private fun createCountryList(): JComboBox<String>{
+        if (countryList == null) {
+            countryList = JComboBox<String>().apply {
+                addItem("all")
+                addItem("ae")
+                addItem("ar")
+                addItem("at")
+                addItem("au")
+                addItem("be")
+                addItem("bg")
+                addItem("br")
+                addItem("ca")
+                addItem("ch")
+                addItem("cn")
+                addItem("co")
+                addItem("cu")
+                addItem("cz")
+                addItem("de")
+                addItem("eg")
+                addItem("fr")
+                addItem("gb")
+                addItem("gr")
+                addItem("hk")
+                addItem("hu")
+                addItem("id")
+                addItem("ie")
+                addItem("il")
+                addItem("in")
+                addItem("it")
+                addItem("jp")
+                addItem("kr")
+                addItem("lt")
+                addItem("lv")
+                addItem("ma")
+                addItem("mx")
+                addItem("my")
+                addItem("ng")
+                addItem("nl")
+                addItem("no")
+                addItem("nz")
+                addItem("ph")
+                addItem("pl")
+                addItem("pt")
+                addItem("ro")
+                addItem("rs")
+                addItem("ru")
+                addItem("sa")
+                addItem("se")
+                addItem("sg")
+                addItem("si")
+                addItem("sk")
+                addItem("th")
+                addItem("tr")
+                addItem("tw")
+                addItem("ua")
+                addItem("us")
+                addItem("ve")
+                addItem("za")
                 addActionListener(this@MenuView)
             }
         }
-
-        if (fromDate == null){
-            fromDate = JTextField().apply {
+        return countryList!!
+    }
+    private fun createCategoryList(): JComboBox<String>{
+        if (categoryList == null) {
+            categoryList = JComboBox<String>().apply {
+                addItem("all")
+                addItem("business")
+                addItem("entertainment")
+                addItem("general")
+                addItem("health")
+                addItem("science")
+                addItem("sports")
+                addItem("technology")
                 addActionListener(this@MenuView)
             }
         }
-        if (toDate == null){
-            //format = yyyy-mm-dd
-            toDate = JTextField().apply {
-                addActionListener(this@MenuView)
-            }
-        }
-
+        return categoryList!!
+    }
+    private fun createSortByList(): JComboBox<String>{
         if (sortBy == null){
             sortBy = JComboBox<String>().apply {
                 addItem("relevancy")
@@ -137,7 +236,17 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                 addActionListener(this@MenuView)
             }
         }
+        return sortBy!!
+    }
 
+    private fun createEverythingParameters(): JPanel{
+        resetEverythingParameters()
+        dynamicFieldsPanel.removeAll()
+        createLanguageList()
+        createKeywordField()
+        createFromDateField()
+        createToDateField()
+        createSortByList()
         dynamicFieldsPanel.add(JLabel("Langue"))
         dynamicFieldsPanel.add(languageList)
         dynamicFieldsPanel.add(JLabel("Mot clé"))
@@ -151,114 +260,12 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         return dynamicFieldsPanel
     }
     private fun createHeadlinesParameters(): JPanel{
-        // ... (autres initialisations)
-
-        // labels + comboboxes
+        resetEverythingParameters()
         dynamicFieldsPanel.removeAll()
-
-        // Initialiser les combobox si elles ne le sont pas déjà
-        if (countryList == null) {
-            countryList = JComboBox<String>().apply {
-                addItem("all")
-                addItem("ae")
-                addItem("ar")
-                addItem("at")
-                addItem("au")
-                addItem("be")
-                addItem("bg")
-                addItem("br")
-                addItem("ca")
-                addItem("ch")
-                addItem("cn")
-                addItem("co")
-                addItem("cu")
-                addItem("cz")
-                addItem("de")
-                addItem("eg")
-                addItem("fr")
-                addItem("gb")
-                addItem("gr")
-                addItem("hk")
-                addItem("hu")
-                addItem("id")
-                addItem("ie")
-                addItem("il")
-                addItem("in")
-                addItem("it")
-                addItem("jp")
-                addItem("kr")
-                addItem("lt")
-                addItem("lv")
-                addItem("ma")
-                addItem("mx")
-                addItem("my")
-                addItem("ng")
-                addItem("nl")
-                addItem("no")
-                addItem("nz")
-                addItem("ph")
-                addItem("pl")
-                addItem("pt")
-                addItem("ro")
-                addItem("rs")
-                addItem("ru")
-                addItem("sa")
-                addItem("se")
-                addItem("sg")
-                addItem("si")
-                addItem("sk")
-                addItem("th")
-                addItem("tr")
-                addItem("tw")
-                addItem("ua")
-                addItem("us")
-                addItem("ve")
-                addItem("za")
-                addActionListener(this@MenuView)
-            }
-        }
-
-        if (categoryList == null) {
-            categoryList = JComboBox<String>().apply {
-                addItem("all")
-                addItem("business")
-                addItem("entertainment")
-                addItem("general")
-                addItem("health")
-                addItem("science")
-                addItem("sports")
-                addItem("technology")
-                addActionListener(this@MenuView)
-            }
-        }
-
-        if (languageList == null) {
-            languageList = JComboBox<String>().apply {
-                addItem("all")
-                addItem("ar")
-                addItem("de")
-                addItem("en")
-                addItem("es")
-                addItem("fr")
-                addItem("he")
-                addItem("it")
-                addItem("nl")
-                addItem("no")
-                addItem("pt")
-                addItem("ru")
-                addItem("se")
-                addItem("ud")
-                addItem("zh")
-                addActionListener(this@MenuView)
-            }
-        }
-
-        if (keyword == null){
-            keyword = JTextField().apply {
-                addActionListener(this@MenuView)
-            }
-        }
-
+        createCountryList()
+        createCategoryList()
+        createLanguageList()
+        createKeywordField()
         dynamicFieldsPanel.add(JLabel("Pays"))
         dynamicFieldsPanel.add(countryList)
         dynamicFieldsPanel.add(JLabel("Catégorie"))
@@ -270,108 +277,11 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         return dynamicFieldsPanel
     }
     private fun createSourcesParameters(): JPanel {
-        // ... (autres initialisations)
-
-        // labels + comboboxes
+        resetEverythingParameters()
         dynamicFieldsPanel.removeAll()
-
-        // Initialiser les combobox si elles ne le sont pas déjà
-        if (countryList == null) {
-            countryList = JComboBox<String>().apply {
-                addItem("all")
-                addItem("ae")
-                addItem("ar")
-                addItem("at")
-                addItem("au")
-                addItem("be")
-                addItem("bg")
-                addItem("br")
-                addItem("ca")
-                addItem("ch")
-                addItem("cn")
-                addItem("co")
-                addItem("cu")
-                addItem("cz")
-                addItem("de")
-                addItem("eg")
-                addItem("fr")
-                addItem("gb")
-                addItem("gr")
-                addItem("hk")
-                addItem("hu")
-                addItem("id")
-                addItem("ie")
-                addItem("il")
-                addItem("in")
-                addItem("it")
-                addItem("jp")
-                addItem("kr")
-                addItem("lt")
-                addItem("lv")
-                addItem("ma")
-                addItem("mx")
-                addItem("my")
-                addItem("ng")
-                addItem("nl")
-                addItem("no")
-                addItem("nz")
-                addItem("ph")
-                addItem("pl")
-                addItem("pt")
-                addItem("ro")
-                addItem("rs")
-                addItem("ru")
-                addItem("sa")
-                addItem("se")
-                addItem("sg")
-                addItem("si")
-                addItem("sk")
-                addItem("th")
-                addItem("tr")
-                addItem("tw")
-                addItem("ua")
-                addItem("us")
-                addItem("ve")
-                addItem("za")
-                addActionListener(this@MenuView)
-            }
-        }
-
-        if (categoryList == null) {
-            categoryList = JComboBox<String>().apply {
-                addItem("all")
-                addItem("business")
-                addItem("entertainment")
-                addItem("general")
-                addItem("health")
-                addItem("science")
-                addItem("sports")
-                addItem("technology")
-                addActionListener(this@MenuView)
-            }
-        }
-
-        if (languageList == null) {
-            languageList = JComboBox<String>().apply {
-                addItem("all")
-                addItem("ar")
-                addItem("de")
-                addItem("en")
-                addItem("es")
-                addItem("fr")
-                addItem("he")
-                addItem("it")
-                addItem("nl")
-                addItem("no")
-                addItem("pt")
-                addItem("ru")
-                addItem("se")
-                addItem("ud")
-                addItem("zh")
-                addActionListener(this@MenuView)
-            }
-        }
-
+        createCountryList()
+        createCategoryList()
+        createLanguageList()
         dynamicFieldsPanel.add(JLabel("Pays"))
         dynamicFieldsPanel.add(countryList)
         dynamicFieldsPanel.add(JLabel("Catégorie"))
@@ -379,6 +289,22 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         dynamicFieldsPanel.add(JLabel("Langue"))
         dynamicFieldsPanel.add(languageList)
         return dynamicFieldsPanel
+    }
+
+    class PlaceholderFocusListener(private val placeholder: String, private val textField: JTextField) : FocusListener {
+        override fun focusGained(e: FocusEvent) {
+            if (textField.text == placeholder) {
+                textField.text = ""
+                textField.foreground = Color.BLACK
+            }
+        }
+
+        override fun focusLost(e: FocusEvent) {
+            if (textField.text.isEmpty()) {
+                textField.text = placeholder
+                textField.foreground = Color.GRAY
+            }
+        }
     }
 
 
@@ -392,6 +318,12 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         return contentPane
     }
 
+    fun checkdateinput(date: String): Boolean{
+        if(date == "yyyy-mm-dd") return true
+        if (date == "") return true
+        val regex = Regex(pattern = """\d{4}-\d{2}-\d{2}""")
+        return regex.matches(date)
+    }
 
     override fun display() {
         frame.isVisible = true
@@ -405,7 +337,6 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         if (evt != null) {
             if (evt.newValue is String) {
                 logger().info("NewsView: ${evt.newValue}")
-                println( evt.newValue)
             }
         } else {
             logger().error("evt is null")
@@ -414,19 +345,18 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
 
     override fun actionPerformed(e: ActionEvent?) {
         if (e != null && frame!=null) {
-            //displays the correct view depending on the selected value in the menu
             if (e.source is JComboBox<*>) {
                 logger().info("actionPerformed: ${(e.source as JComboBox<*>).selectedItem}")
-                currentRequestType = (e.source as JComboBox<*>).selectedItem.toString()
+                if((e.source as JComboBox<*>).selectedItem.toString() == "Sources" || (e.source as JComboBox<*>).selectedItem.toString() == "Headlines" || (e.source as JComboBox<*>).selectedItem.toString() == "Everything" ){
+                    currentRequestType = (e.source as JComboBox<*>).selectedItem.toString()
+                }
                 when ((e.source as JComboBox<*>).selectedItem) {
                     "Sources" ->  setDynamicParametersPanel(createSourcesParameters())
                     "Headlines" -> setDynamicParametersPanel(createHeadlinesParameters())
                     "Everything" -> setDynamicParametersPanel(createEverythingParameters())
-                    // Ajoutez d'autres cas pour les autres types de requête
                 }
                 frame.pack()
             }
-            // launches the request
             if (e.source is JButton) {
                 logger().info("actionPerformed: ${e.actionCommand}")
                 if (e.actionCommand == "Valider") {
@@ -434,28 +364,53 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                     var country = countryList?.selectedItem.toString() ?: ""
                     var category = categoryList?.selectedItem.toString() ?: ""
                     var language = languageList?.selectedItem.toString() ?: ""
-                    val keyword = keyword?.text ?: ""
-                    val from = fromDate?.text ?: ""
-                    val to = toDate?.text ?: ""
+                    var keyword = keyword?.text ?: ""
+                    var from = fromDate?.text ?: ""
+                    if (checkdateinput(from) == false){
+                        JOptionPane.showMessageDialog(frame, "La date de début n'est pas au bon format (yyyy-mm-dd)")
+                        return
+                    }
+                    var to = toDate?.text ?: ""
+                    if (checkdateinput(to) == false){
+                        JOptionPane.showMessageDialog(frame, "La date de fin n'est pas au bon format (yyyy-mm-dd)")
+                        return
+                    }
                     val sort = sortBy?.selectedItem.toString() ?: ""
                     if (country == "all") country = ""
+                    if(keyword == "Mot clé") keyword = ""
+                    if (from == "yyyy-mm-dd") from = ""
+                    if (to == "yyyy-mm-dd") to = ""
                     if (category == "all") category = ""
                     if (language == "all") language = ""
-                    // Appeler la méthode dans le contrôleur avec les paramètres
                     println( currentRequestType )
+
                     if (currentRequestType == "Sources") {
-                        sourceController.getSources("country=$country&category=$category&language=$language", "d085fa05e7ca462c8bb0e770ec30f41e")
-                        println( "country=$country&category=$category&language=$language")
+                        if(sourceController.checkRequest(country, category, language) == false){
+                            JOptionPane.showMessageDialog(frame, "Les paramètres ne sont pas valides")
+                            return
+                        }else{
+                            sourceController.getSources("country=$country&category=$category&language=$language", "d085fa05e7ca462c8bb0e770ec30f41e")
+                            println( "country=$country&category=$category&language=$language")
+                        }
                     }
                     if (currentRequestType == "Everything") {
-                        newsController.getnewsall("q=$keyword&from=$from&to=$to&sortBy=$sort&language=$language", "d085fa05e7ca462c8bb0e770ec30f41e")
-                        println( "q=$keyword&from=$from&to=$to&sortBy=$sort&language=$language")
+                        if(newsController.checkRequestEverything(keyword, from, to, sort, language) == false){
+                            JOptionPane.showMessageDialog(frame, "Les paramètres ne sont pas valides")
+                            return
+                        }else{
+                            newsController.getnewsall("q=$keyword&from=$from&to=$to&sortBy=$sort&language=$language", "d085fa05e7ca462c8bb0e770ec30f41e")
+                            println( "q=$keyword&from=$from&to=$to&sortBy=$sort&language=$language")
+                        }
                     }
                     if (currentRequestType == "Headlines") {
-                        newsController.getnewsheadlines("country=$country&category=$category&language=$language&q=$keyword", "d085fa05e7ca462c8bb0e770ec30f41e")
-                        println( "country=$country&category=$category&language=$language&q=$keyword")
+                        if(newsController.checkRequestHeadlines(keyword,country, category, language) == false){
+                            JOptionPane.showMessageDialog(frame, "Les paramètres ne sont pas valides")
+                            return
+                        }else{
+                            newsController.getnewsheadlines("country=$country&category=$category&language=$language&q=$keyword", "d085fa05e7ca462c8bb0e770ec30f41e")
+                            println( "country=$country&category=$category&language=$language&q=$keyword")
+                        }
                     }
-                    // Ajoutez d'autres conditions pour les autres types de requête
                 }
             }
         }

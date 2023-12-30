@@ -23,4 +23,8 @@ class SourcesController (val model: INewsModel){
             it.close()
         }
     }
+
+    fun checkRequest(country: String, category: String, language: String): Boolean {
+        return true
+    }
 }

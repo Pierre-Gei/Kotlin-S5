@@ -30,4 +30,21 @@ class NewsController (val model: INewsModel){
             it.close()
         }
     }
+
+    fun checkRequestEverything(keyword: String, from: String, to: String, sort: String, language: String): Boolean {
+        if (keyword == "" && from == "" && to == "" && sort == "" && language == "") {
+            return false
+        }else if (keyword == "") {
+            return false
+        }else{
+            return true
+        }
+    }
+    fun checkRequestHeadlines(keyword: String,country: String, category: String, language:String): Boolean {
+        if (keyword == ""&& country == " " && category == "" && language == "") {
+            return false
+        }else{
+            return true
+        }
+    }
 }
