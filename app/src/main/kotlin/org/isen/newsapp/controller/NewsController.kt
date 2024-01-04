@@ -41,7 +41,7 @@ class NewsController (val model: INewsModel){
         }
     }
     fun checkRequestHeadlines(keyword: String,country: String, category: String, language:String): Boolean {
-        if (keyword == ""&& country == " " && category == "" && language == "") {
+        if (keyword == "" && country == "" && category == "" && language == "") {
             return false
         }else{
             return true
