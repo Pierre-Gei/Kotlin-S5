@@ -4,11 +4,12 @@ import org.apache.logging.log4j.kotlin.logger
 import org.isen.newsapp.controller.MenuController
 import org.isen.newsapp.controller.NewsController
 import org.isen.newsapp.controller.SourcesController
+import org.isen.newsapp.model.data.Article
+import org.isen.newsapp.model.data.ArticlesResult
+import org.isen.newsapp.model.data.Source
+import org.isen.newsapp.model.data.SourcesResult
 import org.isen.newsapp.view.INewsView
-import java.awt.BorderLayout
-import java.awt.Color
-import java.awt.Dimension
-import java.awt.FlowLayout
+import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.FocusEvent
@@ -20,7 +21,6 @@ import javax.swing.*
 //classe principlae de l'app qui contient les 3 autres vues et qui permet de naviguer entre elles ainsi que de donner les paramètres de connexion à l'api
 class MenuView (val controller: MenuController, val sourceController: SourcesController, val newsController: NewsController, title: String="News App"): INewsView, ActionListener {
     companion object logging
-
     private var frame: JFrame
     private var countryList: JComboBox<String>? = null
     private var categoryList: JComboBox<String>? = null
@@ -31,7 +31,6 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
     private var toDate: JTextField? = null
     private var sortBy: JComboBox<String>? = null
     var currentRequestType = ""
-
     init {
         frame = JFrame().apply {
                     isVisible = false
@@ -46,6 +45,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         dynamicFieldsPanel.layout = FlowLayout()
         currentRequestType = "Headlines"
         setDynamicParametersPanel(createHeadlinesParameters())
+        setDynamicResultsPanel((JPanel()))
     }
     private fun makeGUI(): JPanel {
         val contentPane = JPanel()
@@ -68,7 +68,6 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
 
         return contentPane
     }
-
     private fun createRequestTypeComboBox(): JPanel {
         val contentPane = JPanel()
         contentPane.layout = BorderLayout()
@@ -124,7 +123,6 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
             }
         }
     }
-
     private fun createLanguageList(): JComboBox<String>{
         if (languageList == null) {
             languageList = JComboBox<String>().apply {
@@ -238,7 +236,6 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         }
         return sortBy!!
     }
-
     private fun createEverythingParameters(): JPanel{
         resetEverythingParameters()
         dynamicFieldsPanel.removeAll()
@@ -290,7 +287,6 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         dynamicFieldsPanel.add(languageList)
         return dynamicFieldsPanel
     }
-
     class PlaceholderFocusListener(private val placeholder: String, private val textField: JTextField) : FocusListener {
         override fun focusGained(e: FocusEvent) {
             if (textField.text == placeholder) {
@@ -306,9 +302,6 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
             }
         }
     }
-
-
-    //création du bouton de validation
     private fun createButton(): JPanel {
         val contentPane = JPanel()
         contentPane.layout = BorderLayout()
@@ -317,22 +310,39 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         contentPane.add(button, BorderLayout.CENTER)
         return contentPane
     }
-
     fun checkdateinput(date: String): Boolean{
         if(date == "yyyy-mm-dd") return true
         if (date == "") return true
         val regex = Regex(pattern = """\d{4}-\d{2}-\d{2}""")
         return regex.matches(date)
     }
+    fun createArticlePanel(article: Article): JPanel {
+        val contentPane = JPanel()
+        contentPane.layout = BorderLayout()
 
+        val titleFont = Font("Arial", Font.PLAIN, 20)
+        val titleLbl = JLabel(article.title)
+        titleLbl.font = titleFont
+        contentPane.add(titleLbl, BorderLayout.NORTH)
+
+        val descriptionFont = Font("Arial", Font.PLAIN, 10)
+        val descriptionLbl = JLabel(article.description)
+        descriptionLbl.font = descriptionFont
+        contentPane.add(descriptionLbl, BorderLayout.CENTER)
+
+        val sourceFont = Font("Arial", Font.PLAIN, 12) // Adjust size as needed
+        val sourceLbl = JLabel(article.source.name)
+        sourceLbl.font = sourceFont
+        contentPane.add(sourceLbl, BorderLayout.SOUTH)
+
+        return contentPane
+    }
     override fun display() {
         frame.isVisible = true
     }
-
     override fun close() {
         this.controller.closeview()
     }
-
     override fun propertyChange(evt: PropertyChangeEvent?) {
         if (evt != null) {
             if (evt.newValue is String) {
@@ -342,7 +352,54 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
             logger().error("evt is null")
         }
     }
+    fun setDynamicResultsPanel(panel: JPanel) {
+        //replace only the dynamic results panel
+        frame.contentPane.remove(dynamicFieldsPanel)
+        dynamicFieldsPanel = panel
+        frame.contentPane.add(dynamicFieldsPanel, BorderLayout.CENTER)
+        frame.pack()
+    }
+    override fun displayNews(articles: ArticlesResult) {
+        println("test $articles")
+        if (articles.articles != null) {
+            val contentPane = JPanel()
+            contentPane.layout = BoxLayout(contentPane, BoxLayout.Y_AXIS)
+            val scrollPane = JScrollPane(contentPane)
+            println("art list ${articles.articles}")
 
+            articles.articles.articles.forEach {
+                println("current art $it")
+                contentPane.add(createArticlePanel(it))
+                contentPane.add(Box.createVerticalStrut(10)) // Add some vertical spacing between articles
+            }
+
+            frame.contentPane.add(scrollPane, BorderLayout.CENTER)
+            frame.pack()
+        } else if (articles.err != null) {
+            displayError(articles.err)
+        } else {
+            JOptionPane.showMessageDialog(frame, "Aucun article trouvé")
+        }
+    }
+    override fun displaySources(sources: SourcesResult) {
+        if (sources.sources != null) {
+            val contentPane = JPanel()
+            contentPane.layout = BorderLayout()
+            val scrollPane = JScrollPane(contentPane)
+            sources.sources.sources.forEach {
+                contentPane.add(JLabel(it.name), BorderLayout.NORTH)
+                contentPane.add(JLabel(it.description), BorderLayout.CENTER)
+                contentPane.add(JLabel(it.url), BorderLayout.SOUTH)
+            }
+            frame.contentPane.add(scrollPane, BorderLayout.CENTER)
+            frame.pack()
+        }else{
+            JOptionPane.showMessageDialog(frame, "Aucune source trouvée")
+        }
+    }
+    override fun displayError(error: Exception) {
+        JOptionPane.showMessageDialog(frame, error.message)
+    }
     override fun actionPerformed(e: ActionEvent?) {
         if (e != null && frame!=null) {
             if (e.source is JComboBox<*>) {
@@ -385,32 +442,30 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                     println( currentRequestType )
 
                     if (currentRequestType == "Sources") {
-                        if(sourceController.checkRequest(country, category, language) == false){
+                        if(!sourceController.checkRequest(country, category, language)){
                             JOptionPane.showMessageDialog(frame, "Les paramètres ne sont pas valides")
                             return
                         }else{
                             sourceController.getSources("country=$country&category=$category&language=$language", "d085fa05e7ca462c8bb0e770ec30f41e")
-                            println( "country=$country&category=$category&language=$language")
                         }
                     }
                     if (currentRequestType == "Everything") {
-                        if(newsController.checkRequestEverything(keyword, from, to, sort, language) == false){
+                        if(!newsController.checkRequestEverything(keyword, from, to, sort, language)){
                             JOptionPane.showMessageDialog(frame, "Les paramètres ne sont pas valides")
                             return
                         }else{
-                            newsController.getnewsall("q=$keyword&from=$from&to=$to&sortBy=$sort&language=$language", "d085fa05e7ca462c8bb0e770ec30f41e")
-                            println( "q=$keyword&from=$from&to=$to&sortBy=$sort&language=$language")
+                            displayNews(newsController.getnewsall("q=$keyword&from=$from&to=$to&sortBy=$sort&language=$language", "d085fa05e7ca462c8bb0e770ec30f41e"))
                         }
                     }
                     if (currentRequestType == "Headlines") {
-                        if(newsController.checkRequestHeadlines(keyword,country, category, language) == false){
+                        if(!newsController.checkRequestHeadlines(keyword,country, category, language)){
                             JOptionPane.showMessageDialog(frame, "Les paramètres ne sont pas valides")
                             return
                         }else{
-                            newsController.getnewsheadlines("country=$country&category=$category&language=$language&q=$keyword", "d085fa05e7ca462c8bb0e770ec30f41e")
-                            println( "country=$country&category=$category&language=$language&q=$keyword")
+                            displayNews(newsController.getnewsheadlines("q=$keyword&country=$country&category=$category&language=$language", "d085fa05e7ca462c8bb0e770ec30f41e"))
                         }
                     }
+                    //recover the response from model and display it
                 }
             }
         }

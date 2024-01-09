@@ -2,8 +2,7 @@ package org.isen.newsapp.view.impl
 
 import org.apache.logging.log4j.kotlin.logger
 import org.isen.newsapp.controller.NewsController
-import org.isen.newsapp.model.data.Article
-import org.isen.newsapp.model.data.ArticlesReq
+import org.isen.newsapp.model.data.*
 import org.isen.newsapp.view.INewsView
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -50,6 +49,19 @@ class NewsEverythingView (val controller: NewsController, title: String="News Ap
         contentPane.add(newsList, BorderLayout.CENTER)
         return contentPane
     }
+
+    override fun displayNews(articles: ArticlesResult) {
+        TODO("Not yet implemented")
+    }
+
+    override fun displaySources(sources: SourcesResult) {
+        TODO("Not yet implemented")
+    }
+
+    override fun displayError(error: Exception) {
+        TODO("Not yet implemented")
+    }
+
     override fun display() {
         frame.isVisible = true
     }

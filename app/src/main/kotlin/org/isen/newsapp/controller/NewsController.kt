@@ -1,15 +1,17 @@
 package org.isen.newsapp.controller
 
 import org.isen.newsapp.model.INewsModel
+import org.isen.newsapp.model.data.ArticlesResult
 import org.isen.newsapp.view.INewsView
 
 class NewsController (val model: INewsModel){
     private val views = mutableListOf<INewsView>()
-    fun getnewsall(querry_args: String, API_KEY: String) {
-        this.model.fetchNews(querry_args , API_KEY, INewsModel.NEWS_ALL)
+
+    fun getnewsall(querry_args: String, API_KEY: String) : ArticlesResult {
+        return this.model.fetchNews(querry_args, API_KEY, INewsModel.NEWS_ALL)
     }
-    fun getnewsheadlines(querry_args: String, API_KEY: String) {
-        this.model.fetchNews(querry_args , API_KEY, INewsModel.NEWS_HEADLINES)
+    fun getnewsheadlines(querry_args: String, API_KEY: String): ArticlesResult {
+        return this.model.fetchNews(querry_args , API_KEY, INewsModel.NEWS_HEADLINES)
     }
 
     fun registerviewtoall(v: INewsView) {

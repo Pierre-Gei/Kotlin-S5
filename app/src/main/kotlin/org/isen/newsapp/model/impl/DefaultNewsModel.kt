@@ -1,12 +1,13 @@
 package org.isen.newsapp.model.impl
 
 import com.github.kittinunf.fuel.httpGet
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.apache.logging.log4j.kotlin.logger
 import org.isen.newsapp.model.INewsModel
 import org.isen.newsapp.model.data.ArticlesReq
+import org.isen.newsapp.model.data.ArticlesResult
 import org.isen.newsapp.model.data.SourceReq
+import org.isen.newsapp.model.data.SourcesResult
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
 import kotlin.properties.Delegates
@@ -27,65 +28,62 @@ class DefaultNewsModel : INewsModel {
         pcs.firePropertyChange(INewsModel.SOURCES, oldValue, newValue)
     }
 
-    private suspend fun fetchEverything(querry_args: String, API_KEY: String) {
+    private suspend fun fetchEverything(querry_args: String, API_KEY: String): ArticlesResult {
         if (querry_args == "") {
             logger().error("querry_args is empty")
-            return
+            return ArticlesResult(null, IllegalArgumentException("querry_args is empty"))
         }else if (API_KEY == "") {
             logger().error("API_KEY is empty")
-            return
+            return ArticlesResult(null, IllegalArgumentException("API_KEY is empty"))
         }
         val (request, response, result) = "https://newsapi.org/v2/everything?$querry_args&apiKey=$API_KEY".httpGet().responseObject(ArticlesReq.Deserializer())
         logger().info("Status code: ${response.statusCode}")
-        println( "result: $result")
         result.let { (articles, err) ->
-            news = articles
+            return ArticlesResult(articles, err)
         }
     }
 
-    private suspend fun fetchHeadlines(querry_args: String, API_KEY: String) {
+    private suspend fun fetchHeadlines(querry_args: String, API_KEY: String) : ArticlesResult{
         if (querry_args == "") {
             logger().error("querry_args is empty")
-            return
+            return ArticlesResult(null, IllegalArgumentException("querry_args is empty"))
         }else if (API_KEY == "") {
             logger().error("API_KEY is empty")
-            return
+            return ArticlesResult(null, IllegalArgumentException("API_KEY is empty"))
         }
         val (request, response, result) = "https://newsapi.org/v2/top-headlines?$querry_args&apiKey=$API_KEY".httpGet().responseObject(ArticlesReq.Deserializer())
         logger().info("Status code: ${response.statusCode}")
-        println( "result: $result")
         result.let { (articles, err) ->
-            news = articles
+            return ArticlesResult(articles, err)
         }
     }
 
-    public override fun fetchNews(querry_args: String, API_KEY: String, type: String) {
-        if (type == INewsModel.NEWS_ALL) {
-            GlobalScope.launch {
+    public override fun fetchNews(querry_args: String, API_KEY: String, type: String): ArticlesResult {
+        return runBlocking {
+            if (type == INewsModel.NEWS_ALL) {
                 fetchEverything(querry_args, API_KEY)
-            }
-        }else if (type == INewsModel.NEWS_HEADLINES) {
-            GlobalScope.launch {
+            } else if (type == INewsModel.NEWS_HEADLINES) {
                 fetchHeadlines(querry_args, API_KEY)
+            } else {
+                logger().error("type is not valid")
+                ArticlesResult(null, IllegalArgumentException("type is not valid"))
             }
-        }else{
-            logger().error("type is not valid")
         }
     }
 
-    public override fun fetchSources(querry_args: String, API_KEY: String) {
+    public override fun fetchSources(querry_args: String, API_KEY: String): SourcesResult {
         if (querry_args == "") {
             logger().error("querry_args is empty")
-            return
+            return SourcesResult(null, IllegalArgumentException("querry_args is empty"))
         }else if (API_KEY == "") {
             logger().error("API_KEY is empty")
-            return
+            return SourcesResult(null, IllegalArgumentException("API_KEY is empty"))
         }
         val (request, response, result) = "https://newsapi.org/v2/top-headlines/sources?$querry_args&apiKey=$API_KEY".httpGet().responseObject(SourceReq.Deserializer())
         logger().info("Status code: ${response.statusCode}")
-        result.let { (soucesList, err) ->
-            sources = soucesList
-            println("sources: $sources")
+        result.let { (sources, err) ->
+            this.sources = sources
+            return SourcesResult(sources, err)
         }
     }
 

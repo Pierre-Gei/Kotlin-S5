@@ -8,7 +8,7 @@ data class ArticlesReq(val status: String, val totalResults: Int, val articles: 
         override fun deserialize(content: String): ArticlesReq? = Gson().fromJson(content, ArticlesReq::class.java)
     }
 }
-
+data class ArticlesResult(val articles: ArticlesReq?, val err: Exception?)
 data class Article(
     val source: SourceArt,
     val author: String,

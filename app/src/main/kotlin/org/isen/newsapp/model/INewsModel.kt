@@ -1,5 +1,7 @@
 package org.isen.newsapp.model
 
+import org.isen.newsapp.model.data.ArticlesResult
+import org.isen.newsapp.model.data.SourcesResult
 import java.beans.PropertyChangeListener
 
 interface INewsModel {
@@ -10,8 +12,8 @@ interface INewsModel {
         const val MENU = "menu"
         //a checker
     }
-    fun fetchNews(querry_args: String, API_KEY: String, type: String)
-    fun fetchSources(querry_args: String, API_KEY: String)
+    fun fetchNews(querry_args: String, API_KEY: String, type: String) : ArticlesResult
+    fun fetchSources(querry_args: String, API_KEY: String) : SourcesResult
     fun register(datatype: String, listener: PropertyChangeListener)
     fun unregister(listener: PropertyChangeListener)
 }

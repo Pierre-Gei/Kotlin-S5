@@ -2,8 +2,7 @@ package org.isen.newsapp.view.impl
 
 import org.apache.logging.log4j.kotlin.logger
 import org.isen.newsapp.controller.SourcesController
-import org.isen.newsapp.model.data.Source
-import org.isen.newsapp.model.data.SourceReq
+import org.isen.newsapp.model.data.*
 import org.isen.newsapp.view.INewsView
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -46,6 +45,20 @@ class SourceView (val controller: SourcesController, title: String="News App"): 
         contentPane.add(sourcesList, BorderLayout.CENTER)
         return contentPane
     }
+
+    override fun displayNews(articles: ArticlesResult) {
+        TODO("Not yet implemented")
+    }
+
+    override fun displaySources(sources: SourcesResult) {
+        TODO("Not yet implemented")
+    }
+
+
+    override fun displayError(error: Exception) {
+        TODO("Not yet implemented")
+    }
+
     override fun display() {
         frame.isVisible = true
     }

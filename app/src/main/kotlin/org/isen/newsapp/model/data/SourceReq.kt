@@ -8,6 +8,7 @@ data class SourceReq(val status: String, val sources: List<Source>) {
         override fun deserialize(content: String): SourceReq? = Gson().fromJson(content, SourceReq::class.java)
     }
 }
+data class SourcesResult(val sources: SourceReq?, val err: Exception?)
 
 data class Source(
     val id: String,
