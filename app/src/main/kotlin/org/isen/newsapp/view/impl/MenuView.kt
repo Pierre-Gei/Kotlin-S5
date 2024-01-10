@@ -1,5 +1,7 @@
 package org.isen.newsapp.view.impl
 
+import javafx.application.Application
+import javafx.stage.Stage
 import org.apache.logging.log4j.kotlin.logger
 import org.isen.newsapp.controller.MenuController
 import org.isen.newsapp.controller.NewsController
@@ -16,7 +18,7 @@ import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.beans.PropertyChangeEvent
 import javax.swing.*
-class MenuView (val controller: MenuController, val sourceController: SourcesController, val newsController: NewsController, title: String="News App"): INewsView, ActionListener {
+class MenuView (val controller: MenuController, val sourceController: SourcesController, val newsController: NewsController, title: String="News App"): INewsView, ActionListener, Application() {
     companion object logging
     private var frame: JFrame
     private var countryList: JComboBox<String>? = null
@@ -33,6 +35,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
     //val API_KEY = "d085fa05e7ca462c8bb0e770ec30f41e"
     val API_KEY = "014a24b5c4e249369048e81775a24cf4"
     init {
+        WebView().init()
         frame = JFrame().apply {
                     isVisible = false
                     contentPane = makeGUI()
@@ -502,6 +505,11 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         dynamicParametersPanel.removeAll()
         dynamicParametersPanel.add(createRequestTypeComboBox(), BorderLayout.NORTH)
         dynamicParametersPanel.add(panel, BorderLayout.CENTER)
+        dynamicResultPanel.removeAll()
         frame.pack()
+    }
+
+    override fun start(primaryStage: Stage?) {
+        display()
     }
 }

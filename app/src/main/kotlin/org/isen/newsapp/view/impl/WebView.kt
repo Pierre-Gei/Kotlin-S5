@@ -1,11 +1,15 @@
 package org.isen.newsapp.view.impl
 
 import javafx.application.Application
+import javafx.application.Platform
 import javafx.scene.Scene
 import javafx.scene.web.WebView
 import javafx.stage.Stage
+import java.beans.PropertyChangeEvent
+import java.beans.PropertyChangeListener
 
 class WebView : Application() {
+    val url: String? = null
 
     override fun start(primaryStage: Stage) {
         val webView = javafx.scene.web.WebView()
@@ -23,12 +27,25 @@ class WebView : Application() {
     }
 
     fun display(url: String) {
-        // Chargez l'URL dans le WebView
-        launch(url)
+        Platform.runLater {
+            val webView = WebView()
+            webView.engine.load(url)
+
+            // Create a new stage and set the WebView as its content
+            val stage = Stage()
+            stage.scene = Scene(webView, 800.0, 600.0)
+            stage.title = "Web Page"
+            stage.show()
+        }
     }
 
-    fun close() {
-        // Implémentez cette fonction pour fermer la fenêtre
-        // Exemple : primaryStage.close()
+    init {
     }
+
+    override fun stop() {
+        // stop the model
+
+    }
+
+    //implements
 }
