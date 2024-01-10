@@ -1,5 +1,6 @@
 package org.isen.newsapp.view.impl
 
+import InternalWebView
 import javafx.application.Application
 import javafx.stage.Stage
 import org.apache.logging.log4j.kotlin.logger
@@ -10,7 +11,7 @@ import org.isen.newsapp.model.data.Article
 import org.isen.newsapp.model.data.ArticlesResult
 import org.isen.newsapp.model.data.SourcesResult
 import org.isen.newsapp.view.INewsView
-import org.isen.newsapp.view.impl.WebView
+
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -35,7 +36,6 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
     //val API_KEY = "d085fa05e7ca462c8bb0e770ec30f41e"
     val API_KEY = "014a24b5c4e249369048e81775a24cf4"
     init {
-        WebView().init()
         frame = JFrame().apply {
                     isVisible = false
                     contentPane = makeGUI()
@@ -345,7 +345,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         //add button to open the article in a webview by calling the controller
         val button = JButton("Ouvrir l'article")
         button.addActionListener {
-            WebView().display(article.url)
+            InternalWebView().display(article.url)
         }
         contentPane.add(button, BorderLayout.EAST)
 
@@ -417,7 +417,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                 //add button to open the source in a webview by calling the controller
                 val button = JButton("Ouvrir la source")
                 button.addActionListener {
-                    WebView().display(source.url)
+                    InternalWebView().display(source.url)
                 }
                 dynamicResultPanel.add(button, BorderLayout.EAST)
             }
