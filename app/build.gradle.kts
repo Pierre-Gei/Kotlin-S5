@@ -1,12 +1,19 @@
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.9.0"
-    application
+    id ("org.openjfx.javafxplugin") version "0.1.0"
+    id ("application")
 }
 
+
+javafx {
+    version = "21.0.1"
+    modules = listOf("javafx.controls", "javafx.fxml", "javafx.web")
+}
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
 }
+
 
 sourceSets {
     create("integration") {
@@ -42,6 +49,11 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("com.google.guava:guava:31.0.1-jre")
+
+    // JavaFX
+    implementation("org.openjfx:javafx-base:21.0.1")
+    implementation("org.openjfx:javafx-controls:21.0.1")
+    implementation("org.openjfx:javafx-web:21.0.1")
 }
 
 testing {

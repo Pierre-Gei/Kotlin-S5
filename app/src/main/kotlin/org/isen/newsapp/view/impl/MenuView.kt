@@ -6,9 +6,9 @@ import org.isen.newsapp.controller.NewsController
 import org.isen.newsapp.controller.SourcesController
 import org.isen.newsapp.model.data.Article
 import org.isen.newsapp.model.data.ArticlesResult
-import org.isen.newsapp.model.data.Source
 import org.isen.newsapp.model.data.SourcesResult
 import org.isen.newsapp.view.INewsView
+import org.isen.newsapp.view.impl.WebView
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -16,9 +16,6 @@ import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.beans.PropertyChangeEvent
 import javax.swing.*
-
-
-//classe principlae de l'app qui contient les 3 autres vues et qui permet de naviguer entre elles ainsi que de donner les paramètres de connexion à l'api
 class MenuView (val controller: MenuController, val sourceController: SourcesController, val newsController: NewsController, title: String="News App"): INewsView, ActionListener {
     companion object logging
     private var frame: JFrame
@@ -26,11 +23,15 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
     private var categoryList: JComboBox<String>? = null
     private var languageList: JComboBox<String>? = null
     private var keyword: JTextField? = null
-    private var dynamicFieldsPanel: JPanel
+    private var dynamicParametersPanel: JPanel = JPanel()
+    private var dynamicFieldsPanel: JPanel = JPanel()
+    private var dynamicResultPanel: JPanel = JPanel()
     private var fromDate: JTextField? = null
     private var toDate: JTextField? = null
     private var sortBy: JComboBox<String>? = null
     var currentRequestType = ""
+    //val API_KEY = "d085fa05e7ca462c8bb0e770ec30f41e"
+    val API_KEY = "014a24b5c4e249369048e81775a24cf4"
     init {
         frame = JFrame().apply {
                     isVisible = false
@@ -41,11 +42,11 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                     this.pack()
         }
         this.controller.registerViewToMenu(this)
-        dynamicFieldsPanel = JPanel()
         dynamicFieldsPanel.layout = FlowLayout()
+        dynamicParametersPanel.layout = BorderLayout()
+        dynamicResultPanel.layout = BoxLayout(dynamicResultPanel, BoxLayout.Y_AXIS)
         currentRequestType = "Headlines"
         setDynamicParametersPanel(createHeadlinesParameters())
-        setDynamicResultsPanel((JPanel()))
     }
     private fun makeGUI(): JPanel {
         val contentPane = JPanel()
@@ -53,38 +54,41 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
 
         val requestTypeComboBox = createRequestTypeComboBox()
         if (requestTypeComboBox != null) {
-            contentPane.add(requestTypeComboBox, BorderLayout.NORTH)
+            dynamicParametersPanel.add(requestTypeComboBox, BorderLayout.NORTH)
         }
 
         val dynamicPanel = dynamicFieldsPanel
         if (dynamicPanel != null) {
-            contentPane.add(dynamicPanel, BorderLayout.CENTER)
+            dynamicParametersPanel.add(dynamicPanel, BorderLayout.CENTER)
         }
 
         val button = createButton()
         if (button != null) {
             contentPane.add(button, BorderLayout.SOUTH)
         }
-
+        contentPane.add(dynamicParametersPanel, BorderLayout.NORTH)
         return contentPane
     }
     private fun createRequestTypeComboBox(): JPanel {
         val contentPane = JPanel()
         contentPane.layout = BorderLayout()
+
+        // Moved label and combo box to the top
         contentPane.add(JLabel("Type de requête"), BorderLayout.NORTH)
         val requestTypeList = JComboBox<String>().apply {
             addItem("Headlines")
             addItem("Everything")
             addItem("Sources")
-            // Ajouter d'autres types de requête au besoin
-            addActionListener(this@MenuView)
         }
         //set default value
         requestTypeList.selectedIndex = 0
         requestTypeList.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        requestTypeList.addActionListener(this)
         contentPane.add(requestTypeList, BorderLayout.CENTER)
+
         return contentPane
     }
+
     private fun resetEverythingParameters(){
         countryList = null
         categoryList = null
@@ -335,6 +339,17 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         sourceLbl.font = sourceFont
         contentPane.add(sourceLbl, BorderLayout.SOUTH)
 
+        //add button to open the article in a webview by calling the controller
+        val button = JButton("Ouvrir l'article")
+        button.addActionListener {
+            WebView().display(article.url)
+        }
+        contentPane.add(button, BorderLayout.EAST)
+
+        //add the image if there is one
+
+
+
         return contentPane
     }
     override fun display() {
@@ -352,27 +367,24 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
             logger().error("evt is null")
         }
     }
-    fun setDynamicResultsPanel(panel: JPanel) {
-        //replace only the dynamic results panel
-        frame.contentPane.remove(dynamicFieldsPanel)
-        dynamicFieldsPanel = panel
-        frame.contentPane.add(dynamicFieldsPanel, BorderLayout.CENTER)
-        frame.pack()
-    }
     override fun displayNews(articles: ArticlesResult) {
-        println("test $articles")
         if (articles.articles != null) {
-            val contentPane = JPanel()
-            contentPane.layout = BoxLayout(contentPane, BoxLayout.Y_AXIS)
-            val scrollPane = JScrollPane(contentPane)
-            println("art list ${articles.articles}")
-
-            articles.articles.articles.forEach {
-                println("current art $it")
-                contentPane.add(createArticlePanel(it))
-                contentPane.add(Box.createVerticalStrut(10)) // Add some vertical spacing between articles
+            if(articles.articles.articles.isEmpty()){
+                JOptionPane.showMessageDialog(frame, "Aucun article trouvé")
+                return
+            } else if (articles.articles.status != "ok") {
+                JOptionPane.showMessageDialog(frame, "Erreur lors de la requête : ${articles.articles.status}")
+                return
             }
-
+            dynamicResultPanel.removeAll()
+            val scrollPane = JScrollPane(dynamicResultPanel)
+            articles.articles.articles.forEach {
+                dynamicResultPanel.add(createArticlePanel(it))
+                dynamicResultPanel.add(Box.createRigidArea(Dimension(0, 10)))
+                dynamicResultPanel.add(JSeparator())
+            }
+            //add margin
+            dynamicResultPanel.add(Box.createRigidArea(Dimension(0, 10)))
             frame.contentPane.add(scrollPane, BorderLayout.CENTER)
             frame.pack()
         } else if (articles.err != null) {
@@ -383,22 +395,39 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
     }
     override fun displaySources(sources: SourcesResult) {
         if (sources.sources != null) {
-            val contentPane = JPanel()
-            contentPane.layout = BorderLayout()
-            val scrollPane = JScrollPane(contentPane)
+            if(sources.sources.sources.isEmpty()){
+                JOptionPane.showMessageDialog(frame, "Aucune source trouvée")
+                return
+            } else if (sources.sources.status != "ok") {
+                JOptionPane.showMessageDialog(frame, "Erreur lors de la requête : ${sources.sources.status}")
+                return
+            }
+            dynamicResultPanel.removeAll()
+            val scrollPane = JScrollPane(dynamicResultPanel)
             sources.sources.sources.forEach {
-                contentPane.add(JLabel(it.name), BorderLayout.NORTH)
-                contentPane.add(JLabel(it.description), BorderLayout.CENTER)
-                contentPane.add(JLabel(it.url), BorderLayout.SOUTH)
+                var source = it
+                dynamicResultPanel.add(JLabel(source.name), BorderLayout.NORTH)
+                dynamicResultPanel.add(JLabel(source.description), BorderLayout.CENTER)
+                dynamicResultPanel.add(Box.createRigidArea(Dimension(0, 10)))
+                dynamicResultPanel.add(JSeparator())
+
+                //add button to open the source in a webview by calling the controller
+                val button = JButton("Ouvrir la source")
+                button.addActionListener {
+                    WebView().display(source.url)
+                }
+                dynamicResultPanel.add(button, BorderLayout.EAST)
             }
             frame.contentPane.add(scrollPane, BorderLayout.CENTER)
             frame.pack()
+        } else if (sources.err != null) {
+            displayError(sources.err)
         }else{
             JOptionPane.showMessageDialog(frame, "Aucune source trouvée")
         }
     }
-    override fun displayError(error: Exception) {
-        JOptionPane.showMessageDialog(frame, error.message)
+    override fun displayError(error: String) {
+        JOptionPane.showMessageDialog(frame, error)
     }
     override fun actionPerformed(e: ActionEvent?) {
         if (e != null && frame!=null) {
@@ -439,14 +468,13 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                     if (to == "yyyy-mm-dd") to = ""
                     if (category == "all") category = ""
                     if (language == "all") language = ""
-                    println( currentRequestType )
 
                     if (currentRequestType == "Sources") {
                         if(!sourceController.checkRequest(country, category, language)){
                             JOptionPane.showMessageDialog(frame, "Les paramètres ne sont pas valides")
                             return
                         }else{
-                            sourceController.getSources("country=$country&category=$category&language=$language", "d085fa05e7ca462c8bb0e770ec30f41e")
+                            displaySources(sourceController.getSources("country=$country&category=$category&language=$language", API_KEY))
                         }
                     }
                     if (currentRequestType == "Everything") {
@@ -454,7 +482,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                             JOptionPane.showMessageDialog(frame, "Les paramètres ne sont pas valides")
                             return
                         }else{
-                            displayNews(newsController.getnewsall("q=$keyword&from=$from&to=$to&sortBy=$sort&language=$language", "d085fa05e7ca462c8bb0e770ec30f41e"))
+                            displayNews(newsController.getnewsall("q=$keyword&from=$from&to=$to&sortBy=$sort&language=$language", API_KEY))
                         }
                     }
                     if (currentRequestType == "Headlines") {
@@ -462,7 +490,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                             JOptionPane.showMessageDialog(frame, "Les paramètres ne sont pas valides")
                             return
                         }else{
-                            displayNews(newsController.getnewsheadlines("q=$keyword&country=$country&category=$category&language=$language", "d085fa05e7ca462c8bb0e770ec30f41e"))
+                            displayNews(newsController.getnewsheadlines("q=$keyword&country=$country&category=$category&language=$language", API_KEY))
                         }
                     }
                     //recover the response from model and display it
@@ -471,10 +499,9 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         }
     }
     private fun setDynamicParametersPanel(panel: JPanel) {
-        // Replace only the dynamic parameters panel
-        frame.contentPane.remove(dynamicFieldsPanel)
-        dynamicFieldsPanel = panel
-        frame.contentPane.add(dynamicFieldsPanel, BorderLayout.CENTER)
+        dynamicParametersPanel.removeAll()
+        dynamicParametersPanel.add(createRequestTypeComboBox(), BorderLayout.NORTH)
+        dynamicParametersPanel.add(panel, BorderLayout.CENTER)
         frame.pack()
     }
 }
