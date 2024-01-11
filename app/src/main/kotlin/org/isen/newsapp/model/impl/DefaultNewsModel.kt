@@ -1,5 +1,6 @@
 package org.isen.newsapp.model.impl
 
+import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.httpGet
 import kotlinx.coroutines.*
 import org.apache.logging.log4j.kotlin.logger
@@ -40,7 +41,9 @@ class DefaultNewsModel : INewsModel {
         }
         val (request, response, result) = "https://newsapi.org/v2/everything?$querry_args&apiKey=$API_KEY".httpGet().responseObject(ArticlesReq.Deserializer())
         logger().info("Status code: ${response.statusCode}")
-        if (response.statusCode != 200) {
+        if(response.contentLength == 0.toLong()){
+            return ArticlesResult(null, "Check internet connexion")
+        } else if (response.statusCode != 200) {
             val (_, _, result1) = "https://newsapi.org/v2/everything?$querry_args&apiKey=$API_KEY".httpGet().responseObject(ErrRes.Deserializer())
             // Handle the case where deserialization fails
             result1.component2()?.let { deserializationError ->
@@ -70,7 +73,9 @@ class DefaultNewsModel : INewsModel {
         val (request, response, result) = "https://newsapi.org/v2/top-headlines?$querry_args&apiKey=$API_KEY".httpGet().responseObject(ArticlesReq.Deserializer())
         logger().info("Status code: ${response.statusCode}")
 
-        if (response.statusCode != 200) {
+        if(response.contentLength == 0.toLong()){
+            return ArticlesResult(null, "Check internet connexion")
+        } else if (response.statusCode != 200) {
             val(_, _, result1) = "https://newsapi.org/v2/top-headlines?$querry_args&apiKey=$API_KEY".httpGet().responseObject(ErrRes.Deserializer())
             // Handle the case where deserialization fails
             result1.component2()?.let { deserializationError ->
@@ -111,8 +116,11 @@ class DefaultNewsModel : INewsModel {
         }
         val (request, response, result) = "https://newsapi.org/v2/top-headlines/sources?$querry_args&apiKey=$API_KEY".httpGet().responseObject(SourceReq.Deserializer())
         logger().info("Status code: ${response.statusCode}")
-        if (response.statusCode != 200) {
-            val(_, _, result1) = "https://newsapi.org/v2/sources?$querry_args&apiKey=$API_KEY".httpGet().responseObject(ErrRes.Deserializer())
+        if(response.contentLength == 0.toLong()){
+            return SourcesResult(null, "Check internet connexion")
+        } else if (response.statusCode != 200) {
+            val (_, _, result1) = "https://newsapi.org/v2/sources?$querry_args&apiKey=$API_KEY".httpGet()
+                .responseObject(ErrRes.Deserializer())
             // Handle the case where deserialization fails
             result1.component2()?.let { deserializationError ->
                 return SourcesResult(null, "${deserializationError.localizedMessage}")
@@ -121,7 +129,8 @@ class DefaultNewsModel : INewsModel {
             result1.component1()?.let { err ->
                 return SourcesResult(null, err.status + " : " + err.code + " " + err.message)
             }
-        } else{
+        }
+        else{
             result.let { (sources, err) ->
                 return SourcesResult(sources, "")
             }

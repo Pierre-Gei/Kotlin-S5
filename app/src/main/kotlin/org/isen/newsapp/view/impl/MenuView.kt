@@ -9,6 +9,7 @@ import org.isen.newsapp.controller.NewsController
 import org.isen.newsapp.controller.SourcesController
 import org.isen.newsapp.model.data.Article
 import org.isen.newsapp.model.data.ArticlesResult
+import org.isen.newsapp.model.data.Source
 import org.isen.newsapp.model.data.SourcesResult
 import org.isen.newsapp.view.INewsView
 
@@ -32,17 +33,19 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
     private var fromDate: JTextField? = null
     private var toDate: JTextField? = null
     private var sortBy: JComboBox<String>? = null
+    private var scrollPane: JScrollPane? = null
     var currentRequestType = ""
-    //val API_KEY = "d085fa05e7ca462c8bb0e770ec30f41e"
-    val API_KEY = "014a24b5c4e249369048e81775a24cf4"
+    val API_KEY = "d085fa05e7ca462c8bb0e770ec30f41e"
+    //val API_KEY = "014a24b5c4e249369048e81775a24cf4"
     init {
+        //scrollPane only scroll vertically
         frame = JFrame().apply {
-                    isVisible = false
-                    contentPane = makeGUI()
-                    defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-                    this.title = title
-                    this.preferredSize = Dimension(1000,800)
-                    this.pack()
+            isVisible = false
+            contentPane = makeGUI()
+            defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
+            this.title = title
+            this.preferredSize = Dimension(1000,800)
+            this.pack()
         }
         this.controller.registerViewToMenu(this)
         dynamicFieldsPanel.layout = FlowLayout()
@@ -82,15 +85,16 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
             addItem("Headlines")
             addItem("Everything")
             addItem("Sources")
-        }
-        //set default value
-        requestTypeList.selectedIndex = 0
-        requestTypeList.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        requestTypeList.addActionListener(this)
-        contentPane.add(requestTypeList, BorderLayout.CENTER)
 
+            // Set default value based on currentRequestType
+            selectedItem = currentRequestType
+            border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
+            addActionListener(this@MenuView)
+        }
+        contentPane.add(requestTypeList, BorderLayout.SOUTH)
         return contentPane
     }
+
 
     private fun resetEverythingParameters(){
         countryList = null
@@ -327,19 +331,19 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         val contentPane = JPanel()
         contentPane.layout = BorderLayout()
 
-        val titleFont = Font("Arial", Font.PLAIN, 20)
+        val titleFont = Font("Arial", Font.PLAIN, 22)
         val titleLbl = JLabel(article.title)
         titleLbl.font = titleFont
         contentPane.add(titleLbl, BorderLayout.NORTH)
 
-        val descriptionFont = Font("Arial", Font.PLAIN, 10)
-        val descriptionLbl = JLabel(article.description)
+        val descriptionFont = Font("Arial", Font.PLAIN, 17)
+        val descriptionLbl = JLabel(article.content)
         descriptionLbl.font = descriptionFont
         contentPane.add(descriptionLbl, BorderLayout.CENTER)
 
-        val sourceFont = Font("Arial", Font.PLAIN, 12) // Adjust size as needed
-        val sourceLbl = JLabel(article.source.name)
-        sourceLbl.font = sourceFont
+        val sourceDateFont = Font("Arial", Font.PLAIN, 13) // Adjust size as needed
+        val sourceLbl = JLabel(article.source.name + " - " + article.author + " - Published at " + article.publishedAt)
+        sourceLbl.font = sourceDateFont
         contentPane.add(sourceLbl, BorderLayout.SOUTH)
 
         //add button to open the article in a webview by calling the controller
@@ -348,13 +352,41 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
             InternalWebView().display(article.url)
         }
         contentPane.add(button, BorderLayout.EAST)
-
-        //add the image if there is one
-
-
+        contentPane.preferredSize = Dimension(Window.WIDTH, 75)
 
         return contentPane
     }
+    fun createSourcePanel(sources: Source): JPanel {
+        val contentPane = JPanel()
+        contentPane.layout = BorderLayout()
+
+        val titleFont = Font("Arial", Font.PLAIN, 22)
+        val titleLbl = JLabel(sources.name)
+        titleLbl.font = titleFont
+        contentPane.add(titleLbl, BorderLayout.NORTH)
+
+        val descriptionFont = Font("Arial", Font.PLAIN, 17)
+        val descriptionLbl = JLabel(sources.description)
+        descriptionLbl.font = descriptionFont
+        contentPane.add(descriptionLbl, BorderLayout.CENTER)
+
+        val sourceDateFont = Font("Arial", Font.PLAIN, 13) // Adjust size as needed
+        val sourceLbl = JLabel(sources.category + " - " + sources.language + " - " + sources.country)
+        sourceLbl.font = sourceDateFont
+        contentPane.add(sourceLbl, BorderLayout.SOUTH)
+
+        //add button to open the article in a webview by calling the controller
+        val button = JButton("Ouvrir le site")
+        button.addActionListener {
+            InternalWebView().display(sources.url)
+        }
+        contentPane.add(button, BorderLayout.EAST)
+
+        contentPane.preferredSize = Dimension(Window.WIDTH, 75)
+        return contentPane
+    }
+
+
     override fun display() {
         frame.isVisible = true
     }
@@ -380,22 +412,31 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                 return
             }
             dynamicResultPanel.removeAll()
-            val scrollPane = JScrollPane(dynamicResultPanel)
+            var panel = JPanel()
+            panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
+            val scrollPane = JScrollPane(panel)  // Use scrollPane here
             articles.articles.articles.forEach {
-                dynamicResultPanel.add(createArticlePanel(it))
-                dynamicResultPanel.add(Box.createRigidArea(Dimension(0, 10)))
-                dynamicResultPanel.add(JSeparator())
+                panel.add(createArticlePanel(it))
+                panel.add(Box.createRigidArea(Dimension(0, 10)))
+                panel.add(JSeparator())
             }
             //add margin
+            dynamicResultPanel.add((JLabel("Nombre de résultats : " + articles.articles.articles.size)), BorderLayout.NORTH)
             dynamicResultPanel.add(Box.createRigidArea(Dimension(0, 10)))
-            frame.contentPane.add(scrollPane, BorderLayout.CENTER)
+            panel.add(Box.createRigidArea(Dimension(0, 10)))
+            dynamicResultPanel.add(scrollPane)
+            frame.contentPane.add(dynamicResultPanel, BorderLayout.CENTER)  // Use scrollPane here
+            panel.revalidate()
+            panel.repaint()
             frame.pack()
         } else if (articles.err != null) {
             displayError(articles.err)
         } else {
             JOptionPane.showMessageDialog(frame, "Aucun article trouvé")
         }
+        frame.repaint()
     }
+
     override fun displaySources(sources: SourcesResult) {
         if (sources.sources != null) {
             if(sources.sources.sources.isEmpty()){
@@ -406,28 +447,29 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                 return
             }
             dynamicResultPanel.removeAll()
-            val scrollPane = JScrollPane(dynamicResultPanel)
+            val panel = JPanel()
+            panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
+            val scrollPane = JScrollPane(panel)  // Use scrollPane here
             sources.sources.sources.forEach {
-                var source = it
-                dynamicResultPanel.add(JLabel(source.name), BorderLayout.NORTH)
-                dynamicResultPanel.add(JLabel(source.description), BorderLayout.CENTER)
-                dynamicResultPanel.add(Box.createRigidArea(Dimension(0, 10)))
-                dynamicResultPanel.add(JSeparator())
-
-                //add button to open the source in a webview by calling the controller
-                val button = JButton("Ouvrir la source")
-                button.addActionListener {
-                    InternalWebView().display(source.url)
-                }
-                dynamicResultPanel.add(button, BorderLayout.EAST)
+                panel.add(createSourcePanel(it))
+                panel.add(Box.createRigidArea(Dimension(0, 10)))
+                panel.add(JSeparator())
             }
-            frame.contentPane.add(scrollPane, BorderLayout.CENTER)
+            //add margin
+            dynamicResultPanel.add((JLabel("Nombre de résultats : " + sources.sources.sources.size)), BorderLayout.NORTH)
+            dynamicResultPanel.add(Box.createRigidArea(Dimension(0, 10)))
+            panel.add(Box.createRigidArea(Dimension(0, 10)))
+            dynamicResultPanel.add(scrollPane)
+            frame.contentPane.add(dynamicResultPanel, BorderLayout.CENTER)  // Use scrollPane here
+            panel.revalidate()
+            panel.repaint()
             frame.pack()
         } else if (sources.err != null) {
             displayError(sources.err)
         }else{
             JOptionPane.showMessageDialog(frame, "Aucune source trouvée")
         }
+        frame.repaint()
     }
     override fun displayError(error: String) {
         JOptionPane.showMessageDialog(frame, error)
@@ -437,7 +479,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
             if (e.source is JComboBox<*>) {
                 logger().info("actionPerformed: ${(e.source as JComboBox<*>).selectedItem}")
                 if((e.source as JComboBox<*>).selectedItem.toString() == "Sources" || (e.source as JComboBox<*>).selectedItem.toString() == "Headlines" || (e.source as JComboBox<*>).selectedItem.toString() == "Everything" ){
-                    currentRequestType = (e.source as JComboBox<*>).selectedItem.toString()
+                    currentRequestType = (e.source as JComboBox<*>).selectedItem?.toString() ?: ""
                 }
                 when ((e.source as JComboBox<*>).selectedItem) {
                     "Sources" ->  setDynamicParametersPanel(createSourcesParameters())
@@ -478,6 +520,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                             return
                         }else{
                             displaySources(sourceController.getSources("country=$country&category=$category&language=$language", API_KEY))
+                            return
                         }
                     }
                     if (currentRequestType == "Everything") {
@@ -486,6 +529,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                             return
                         }else{
                             displayNews(newsController.getnewsall("q=$keyword&from=$from&to=$to&sortBy=$sort&language=$language", API_KEY))
+                            return
                         }
                     }
                     if (currentRequestType == "Headlines") {
@@ -494,9 +538,9 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                             return
                         }else{
                             displayNews(newsController.getnewsheadlines("q=$keyword&country=$country&category=$category&language=$language", API_KEY))
+                            return
                         }
                     }
-                    //recover the response from model and display it
                 }
             }
         }
