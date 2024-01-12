@@ -33,10 +33,10 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
     private var fromDate: JTextField? = null
     private var toDate: JTextField? = null
     private var sortBy: JComboBox<String>? = null
-    private var scrollPane: JScrollPane? = null
     var currentRequestType = ""
-    val API_KEY = "d085fa05e7ca462c8bb0e770ec30f41e"
-    //val API_KEY = "014a24b5c4e249369048e81775a24cf4"
+    var API_KEY: String
+    val Default_API_KEY = "d085fa05e7ca462c8bb0e770ec30f41e"
+    //val Backup_API_KEY = "014a24b5c4e249369048e81775a24cf4" //dev purposes only
     init {
         logger().info("init NewsView")
         frame = JFrame().apply {
@@ -46,6 +46,13 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
             this.title = title
             this.preferredSize = Dimension(1000,800)
             this.pack()
+        }
+        //add an option pane to get the API_KEY
+        API_KEY = JOptionPane.showInputDialog("Please enter your newsapi.org API_KEY \n If let empty the default API_KEY will be used")
+        //check if the API_KEY format is correct and if not use the default API_KEY instead
+        if (API_KEY == null || API_KEY == "" || API_KEY.length != 32) {
+            API_KEY = Default_API_KEY
+            JOptionPane.showMessageDialog(frame, "API_KEY incorrecte, la clé par défaut sera utilisée")
         }
         this.controller.registerViewToMenu(this)
         dynamicFieldsPanel.layout = FlowLayout()
