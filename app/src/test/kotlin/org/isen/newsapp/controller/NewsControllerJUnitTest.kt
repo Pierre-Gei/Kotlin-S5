@@ -40,4 +40,21 @@ class NewsControllerJUnitTest {
         assertTrue(result)
     }
 
+    @Test
+    fun `test checkdateinput returns true when date is yyyy-mm-dd`() {
+        val result = newsController.checkdateinput("2020-01-01")
+        assertTrue(result)
+    }
+
+    @Test
+    fun `test checkdateinput returns true when date is empty`() {
+        val result = newsController.checkdateinput("")
+        assertTrue(result)
+    }
+
+    @Test
+    fun `test checkdateinput returns false when date is not yyyy-mm-dd`() {
+        val result = newsController.checkdateinput("2020-01-01-01")
+        assertFalse(result)
+    }
 }

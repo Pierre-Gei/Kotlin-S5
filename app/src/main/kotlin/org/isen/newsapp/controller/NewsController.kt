@@ -49,4 +49,10 @@ class NewsController (val model: INewsModel){
             return true
         }
     }
+    fun checkdateinput(date: String): Boolean{
+        if(date == "yyyy-mm-dd") return true
+        if (date == "") return true
+        val regex = Regex(pattern = """\d{4}-\d{2}-\d{2}""")
+        return regex.matches(date)
+    }
 }

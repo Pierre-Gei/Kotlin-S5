@@ -319,12 +319,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         contentPane.add(button, BorderLayout.CENTER)
         return contentPane
     }
-    fun checkdateinput(date: String): Boolean{
-        if(date == "yyyy-mm-dd") return true
-        if (date == "") return true
-        val regex = Regex(pattern = """\d{4}-\d{2}-\d{2}""")
-        return regex.matches(date)
-    }
+
     fun createArticlePanel(article: Article): JPanel {
         val contentPane = JPanel()
         contentPane.layout = BorderLayout()
@@ -477,12 +472,12 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                     var language = languageList?.selectedItem.toString() ?: ""
                     var keyword = keyword?.text ?: ""
                     var from = fromDate?.text ?: ""
-                    if (checkdateinput(from) == false){
+                    if (newsController.checkdateinput(from) == false){
                         JOptionPane.showMessageDialog(frame, "La date de début n'est pas au bon format (yyyy-mm-dd)")
                         return
                     }
                     var to = toDate?.text ?: ""
-                    if (checkdateinput(to) == false){
+                    if (newsController.checkdateinput(to) == false){
                         JOptionPane.showMessageDialog(frame, "La date de fin n'est pas au bon format (yyyy-mm-dd)")
                         return
                     }

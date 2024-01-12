@@ -3,7 +3,7 @@ import org.isen.newsapp.model.impl.DefaultNewsModel
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
 
-class SourcesControllerTest {
+class SourcesControllerJUnitTest {
 
     private val sourcesController = SourcesController(DefaultNewsModel())
 
