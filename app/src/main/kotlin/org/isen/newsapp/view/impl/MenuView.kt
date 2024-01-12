@@ -33,10 +33,11 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
     private var fromDate: JTextField? = null
     private var toDate: JTextField? = null
     private var sortBy: JComboBox<String>? = null
+    private var scrollPane: JScrollPane? = null
     var currentRequestType = ""
     var API_KEY: String
     val Default_API_KEY = "d085fa05e7ca462c8bb0e770ec30f41e"
-    //val Backup_API_KEY = "014a24b5c4e249369048e81775a24cf4" //dev purposes only
+    //val Backup_API_KEY = "014a24b5c4e249369048e81775a24cf4"
     init {
         logger().info("init NewsView")
         frame = JFrame().apply {
