@@ -20,6 +20,8 @@ import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.beans.PropertyChangeEvent
 import javax.swing.*
+import kotlin.system.exitProcess
+
 class MenuView (val controller: MenuController, val sourceController: SourcesController, val newsController: NewsController, title: String="News App"): INewsView, ActionListener, Application() {
     companion object logging
     private var frame: JFrame
@@ -48,12 +50,12 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
             this.preferredSize = Dimension(1000,800)
             this.pack()
         }
-        //add an option pane to get the API_KEY
-        API_KEY = JOptionPane.showInputDialog("Please enter your newsapi.org API_KEY \n If let empty the default API_KEY will be used")
-        //check if the API_KEY format is correct and if not use the default API_KEY instead
-        if (API_KEY == null || API_KEY == "" || API_KEY.length != 32) {
+        API_KEY = JOptionPane.showInputDialog("Entrez votre clé API newsapi.org \n Si laissée vide, la clé par defaut sera utilisée ","")
+        if ( API_KEY == "" || API_KEY.length != 32) {
             API_KEY = Default_API_KEY
             JOptionPane.showMessageDialog(frame, "API_KEY incorrecte, la clé par défaut sera utilisée")
+        } else {
+            JOptionPane.showMessageDialog(frame, "API_KEY correcte")
         }
         this.controller.registerViewToMenu(this)
         dynamicFieldsPanel.layout = FlowLayout()

@@ -46,14 +46,10 @@ gradle build
 
 ### Usage
 1. Obtain a News API Key from News API.
-2. Open the App.kt file in your preferred Kotlin IDE.
-3. Replace the API_KEY constant with your News API Key (window comming soon):
-   
-```kotlin
-val API_KEY = "your-api-key-here"
-```
-4. Run the application.
-
+2. Run the application.
 ```bash
 .\gradlew run
 ```
+3. Enter your News API Key in the text field. (Or leave it blank to use the default key, which is limited to 100 requests per day.)
+4. Click the "Ok" button.
+5. Explore the application!
