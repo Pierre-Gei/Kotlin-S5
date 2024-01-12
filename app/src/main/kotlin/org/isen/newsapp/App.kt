@@ -16,7 +16,6 @@ class App: Application() {
     val sourcesController = SourcesController(newsModel)
     val newsController = NewsController(newsModel)
     val menuView = MenuView(menuController, sourcesController, newsController, "NewsApp")
-    //WebView().display("https://www.google.com")
     override fun start(primaryStage: Stage) {
         this.menuController.displayview()
     }

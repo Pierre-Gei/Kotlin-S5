@@ -38,7 +38,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
     val API_KEY = "d085fa05e7ca462c8bb0e770ec30f41e"
     //val API_KEY = "014a24b5c4e249369048e81775a24cf4"
     init {
-        //scrollPane only scroll vertically
+        logger().info("init NewsView")
         frame = JFrame().apply {
             isVisible = false
             contentPane = makeGUI()
@@ -57,17 +57,14 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
     private fun makeGUI(): JPanel {
         val contentPane = JPanel()
         contentPane.layout = BorderLayout()
-
         val requestTypeComboBox = createRequestTypeComboBox()
         if (requestTypeComboBox != null) {
             dynamicParametersPanel.add(requestTypeComboBox, BorderLayout.NORTH)
         }
-
         val dynamicPanel = dynamicFieldsPanel
         if (dynamicPanel != null) {
             dynamicParametersPanel.add(dynamicPanel, BorderLayout.CENTER)
         }
-
         val button = createButton()
         if (button != null) {
             contentPane.add(button, BorderLayout.SOUTH)
@@ -75,18 +72,14 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         contentPane.add(dynamicParametersPanel, BorderLayout.NORTH)
         return contentPane
     }
-    private fun createRequestTypeComboBox(): JPanel {
+    fun createRequestTypeComboBox(): JPanel {
         val contentPane = JPanel()
         contentPane.layout = BorderLayout()
-
-        // Moved label and combo box to the top
         contentPane.add(JLabel("Type de requête"), BorderLayout.NORTH)
         val requestTypeList = JComboBox<String>().apply {
             addItem("Headlines")
             addItem("Everything")
             addItem("Sources")
-
-            // Set default value based on currentRequestType
             selectedItem = currentRequestType
             border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
             addActionListener(this@MenuView)
@@ -94,8 +87,6 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         contentPane.add(requestTypeList, BorderLayout.SOUTH)
         return contentPane
     }
-
-
     private fun resetEverythingParameters(){
         countryList = null
         categoryList = null
@@ -116,7 +107,6 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
     }
     private fun createFromDateField(){
         if (fromDate == null){
-            //format = yyyy-mm-dd
             fromDate = JTextField("yyyy-mm-dd").apply {
                 preferredSize = Dimension(100, 30)
                 addFocusListener(PlaceholderFocusListener("yyyy-mm-dd", this))
@@ -126,7 +116,6 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
     }
     private fun createToDateField(){
         if (toDate == null){
-            //format = yyyy-mm-dd
             toDate = JTextField("yyyy-mm-dd").apply {
                 preferredSize = Dimension(100, 30)
                 addFocusListener(PlaceholderFocusListener("yyyy-mm-dd", this))
@@ -305,7 +294,6 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                 textField.foreground = Color.BLACK
             }
         }
-
         override fun focusLost(e: FocusEvent) {
             if (textField.text.isEmpty()) {
                 textField.text = placeholder
@@ -330,63 +318,49 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
     fun createArticlePanel(article: Article): JPanel {
         val contentPane = JPanel()
         contentPane.layout = BorderLayout()
-
         val titleFont = Font("Arial", Font.PLAIN, 22)
         val titleLbl = JLabel(article.title)
         titleLbl.font = titleFont
         contentPane.add(titleLbl, BorderLayout.NORTH)
-
         val descriptionFont = Font("Arial", Font.PLAIN, 17)
         val descriptionLbl = JLabel(article.content)
         descriptionLbl.font = descriptionFont
         contentPane.add(descriptionLbl, BorderLayout.CENTER)
-
-        val sourceDateFont = Font("Arial", Font.PLAIN, 13) // Adjust size as needed
+        val sourceDateFont = Font("Arial", Font.PLAIN, 13)
         val sourceLbl = JLabel(article.source.name + " - " + article.author + " - Published at " + article.publishedAt)
         sourceLbl.font = sourceDateFont
         contentPane.add(sourceLbl, BorderLayout.SOUTH)
-
-        //add button to open the article in a webview by calling the controller
         val button = JButton("Ouvrir l'article")
         button.addActionListener {
             InternalWebView().display(article.url)
         }
         contentPane.add(button, BorderLayout.EAST)
         contentPane.preferredSize = Dimension(Window.WIDTH, 75)
-
         return contentPane
     }
     fun createSourcePanel(sources: Source): JPanel {
         val contentPane = JPanel()
         contentPane.layout = BorderLayout()
-
         val titleFont = Font("Arial", Font.PLAIN, 22)
         val titleLbl = JLabel(sources.name)
         titleLbl.font = titleFont
         contentPane.add(titleLbl, BorderLayout.NORTH)
-
         val descriptionFont = Font("Arial", Font.PLAIN, 17)
         val descriptionLbl = JLabel(sources.description)
         descriptionLbl.font = descriptionFont
         contentPane.add(descriptionLbl, BorderLayout.CENTER)
-
-        val sourceDateFont = Font("Arial", Font.PLAIN, 13) // Adjust size as needed
+        val sourceDateFont = Font("Arial", Font.PLAIN, 13)
         val sourceLbl = JLabel(sources.category + " - " + sources.language + " - " + sources.country)
         sourceLbl.font = sourceDateFont
         contentPane.add(sourceLbl, BorderLayout.SOUTH)
-
-        //add button to open the article in a webview by calling the controller
         val button = JButton("Ouvrir le site")
         button.addActionListener {
             InternalWebView().display(sources.url)
         }
         contentPane.add(button, BorderLayout.EAST)
-
         contentPane.preferredSize = Dimension(Window.WIDTH, 75)
         return contentPane
     }
-
-
     override fun display() {
         frame.isVisible = true
     }
@@ -414,18 +388,17 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
             dynamicResultPanel.removeAll()
             var panel = JPanel()
             panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
-            val scrollPane = JScrollPane(panel)  // Use scrollPane here
+            val scrollPane = JScrollPane(panel)
             articles.articles.articles.forEach {
                 panel.add(createArticlePanel(it))
                 panel.add(Box.createRigidArea(Dimension(0, 10)))
                 panel.add(JSeparator())
             }
-            //add margin
             dynamicResultPanel.add((JLabel("Nombre de résultats : " + articles.articles.articles.size)), BorderLayout.NORTH)
             dynamicResultPanel.add(Box.createRigidArea(Dimension(0, 10)))
             panel.add(Box.createRigidArea(Dimension(0, 10)))
             dynamicResultPanel.add(scrollPane)
-            frame.contentPane.add(dynamicResultPanel, BorderLayout.CENTER)  // Use scrollPane here
+            frame.contentPane.add(dynamicResultPanel, BorderLayout.CENTER)
             panel.revalidate()
             panel.repaint()
             frame.pack()
@@ -436,7 +409,6 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
         }
         frame.repaint()
     }
-
     override fun displaySources(sources: SourcesResult) {
         if (sources.sources != null) {
             if(sources.sources.sources.isEmpty()){
@@ -449,18 +421,17 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
             dynamicResultPanel.removeAll()
             val panel = JPanel()
             panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
-            val scrollPane = JScrollPane(panel)  // Use scrollPane here
+            val scrollPane = JScrollPane(panel)
             sources.sources.sources.forEach {
                 panel.add(createSourcePanel(it))
                 panel.add(Box.createRigidArea(Dimension(0, 10)))
                 panel.add(JSeparator())
             }
-            //add margin
             dynamicResultPanel.add((JLabel("Nombre de résultats : " + sources.sources.sources.size)), BorderLayout.NORTH)
             dynamicResultPanel.add(Box.createRigidArea(Dimension(0, 10)))
             panel.add(Box.createRigidArea(Dimension(0, 10)))
             dynamicResultPanel.add(scrollPane)
-            frame.contentPane.add(dynamicResultPanel, BorderLayout.CENTER)  // Use scrollPane here
+            frame.contentPane.add(dynamicResultPanel, BorderLayout.CENTER)
             panel.revalidate()
             panel.repaint()
             frame.pack()
@@ -491,7 +462,6 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
             if (e.source is JButton) {
                 logger().info("actionPerformed: ${e.actionCommand}")
                 if (e.actionCommand == "Valider") {
-                    // Récupérer les valeurs sélectionnées dans les combobox
                     var country = countryList?.selectedItem.toString() ?: ""
                     var category = categoryList?.selectedItem.toString() ?: ""
                     var language = languageList?.selectedItem.toString() ?: ""
@@ -516,6 +486,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
 
                     if (currentRequestType == "Sources") {
                         if(!sourceController.checkRequest(country, category, language)){
+                            logger().info("Les paramètres ne sont pas valides")
                             JOptionPane.showMessageDialog(frame, "Les paramètres ne sont pas valides")
                             return
                         }else{
@@ -525,6 +496,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                     }
                     if (currentRequestType == "Everything") {
                         if(!newsController.checkRequestEverything(keyword, from, to, sort, language)){
+                            logger().info("Les paramètres ne sont pas valides")
                             JOptionPane.showMessageDialog(frame, "Les paramètres ne sont pas valides")
                             return
                         }else{
@@ -534,6 +506,7 @@ class MenuView (val controller: MenuController, val sourceController: SourcesCon
                     }
                     if (currentRequestType == "Headlines") {
                         if(!newsController.checkRequestHeadlines(keyword,country, category, language)){
+                            logger().info("Les paramètres ne sont pas valides")
                             JOptionPane.showMessageDialog(frame, "Les paramètres ne sont pas valides")
                             return
                         }else{

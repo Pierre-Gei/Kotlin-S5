@@ -31,7 +31,7 @@ class DefaultNewsModel : INewsModel {
         pcs.firePropertyChange(INewsModel.ERR, oldValue, newValue)
     }
 
-    private suspend fun fetchEverything(querry_args: String, API_KEY: String): ArticlesResult {
+    suspend fun fetchEverything(querry_args: String, API_KEY: String): ArticlesResult {
         if (querry_args == "") {
             logger().error("querry_args is empty")
             return ArticlesResult(null, "querry_args is empty")
@@ -40,29 +40,33 @@ class DefaultNewsModel : INewsModel {
             return ArticlesResult(null, "API_KEY is empty")
         }
         val (request, response, result) = "https://newsapi.org/v2/everything?$querry_args&apiKey=$API_KEY".httpGet().responseObject(ArticlesReq.Deserializer())
-        logger().info("Status code: ${response.statusCode}")
+        logger().info("request : $request responded with status code: ${response.statusCode}")
         if(response.contentLength == 0.toLong()){
+            logger().error("Check internet connexion")
             return ArticlesResult(null, "Check internet connexion")
         } else if (response.statusCode != 200) {
             val (_, _, result1) = "https://newsapi.org/v2/everything?$querry_args&apiKey=$API_KEY".httpGet().responseObject(ErrRes.Deserializer())
             // Handle the case where deserialization fails
             result1.component2()?.let { deserializationError ->
+                logger().error("${deserializationError.localizedMessage}")
                 return ArticlesResult(null, "${deserializationError.localizedMessage}")
             }
 
             result1.component1()?.let { err ->
+                logger().error(err.status + " : " + err.code + " " + err.message)
                 return ArticlesResult(null, err.status + " : " + err.code + " " + err.message)
             }
         }
         else {
             result.let { (articles, err) ->
+                logger().info("articles fetched")
                 return ArticlesResult(articles, "")
             }
         }
         return ArticlesResult(null, "error")
     }
 
-    private suspend fun fetchHeadlines(querry_args: String, API_KEY: String) : ArticlesResult{
+    suspend fun fetchHeadlines(querry_args: String, API_KEY: String) : ArticlesResult{
         if (querry_args == "") {
             logger().error("querry_args is empty")
             return ArticlesResult(null, "querry_args is empty")
@@ -71,22 +75,25 @@ class DefaultNewsModel : INewsModel {
             return ArticlesResult(null, "API_KEY is empty")
         }
         val (request, response, result) = "https://newsapi.org/v2/top-headlines?$querry_args&apiKey=$API_KEY".httpGet().responseObject(ArticlesReq.Deserializer())
-        logger().info("Status code: ${response.statusCode}")
-
+        logger().info("request : $request responded with status code: ${response.statusCode}")
         if(response.contentLength == 0.toLong()){
+            logger().error("Check internet connexion")
             return ArticlesResult(null, "Check internet connexion")
         } else if (response.statusCode != 200) {
             val(_, _, result1) = "https://newsapi.org/v2/top-headlines?$querry_args&apiKey=$API_KEY".httpGet().responseObject(ErrRes.Deserializer())
             // Handle the case where deserialization fails
             result1.component2()?.let { deserializationError ->
+                logger().error("${deserializationError.localizedMessage}")
                 return ArticlesResult(null, "${deserializationError.localizedMessage}")
             }
 
             result1.component1()?.let { err ->
+                logger().error(err.status + " : " + err.code + " " + err.message)
                 return ArticlesResult(null, err.status + " : " + err.code + " " + err.message)
             }
         }else{
             result.let { (articles, err) ->
+                logger().info("articles fetched")
                 return ArticlesResult(articles, "")
             }
         }
@@ -102,6 +109,7 @@ class DefaultNewsModel : INewsModel {
             } else {
                 logger().error("type is not valid")
                 ArticlesResult(null, "type is not valid")
+                throw IllegalArgumentException("type is not valid")
             }
         }
     }
@@ -115,23 +123,27 @@ class DefaultNewsModel : INewsModel {
             return SourcesResult(null, "API_KEY is empty")
         }
         val (request, response, result) = "https://newsapi.org/v2/top-headlines/sources?$querry_args&apiKey=$API_KEY".httpGet().responseObject(SourceReq.Deserializer())
-        logger().info("Status code: ${response.statusCode}")
+        logger().info("request : $request responded with status code: ${response.statusCode}")
         if(response.contentLength == 0.toLong()){
+            logger().error("Check internet connexion")
             return SourcesResult(null, "Check internet connexion")
         } else if (response.statusCode != 200) {
             val (_, _, result1) = "https://newsapi.org/v2/sources?$querry_args&apiKey=$API_KEY".httpGet()
                 .responseObject(ErrRes.Deserializer())
             // Handle the case where deserialization fails
             result1.component2()?.let { deserializationError ->
+                logger().error("${deserializationError.localizedMessage}")
                 return SourcesResult(null, "${deserializationError.localizedMessage}")
             }
 
             result1.component1()?.let { err ->
+                logger().error(err.status + " : " + err.code + " " + err.message)
                 return SourcesResult(null, err.status + " : " + err.code + " " + err.message)
             }
         }
         else{
             result.let { (sources, err) ->
+                logger().info("sources fetched")
                 return SourcesResult(sources, "")
             }
         }

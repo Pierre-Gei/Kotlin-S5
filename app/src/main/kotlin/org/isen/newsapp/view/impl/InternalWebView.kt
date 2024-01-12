@@ -3,51 +3,37 @@ import javafx.application.Platform
 import javafx.scene.Scene
 import javafx.scene.web.WebView
 import javafx.stage.Stage
+import org.apache.logging.log4j.kotlin.logger
 
 class InternalWebView : Application() {
     private val internalWebViewInstances: MutableList<InternalWebView> = mutableListOf()
     private lateinit var webView: WebView
 
     override fun start(primaryStage: Stage) {
-        // Initialize the WebView
+        logger().info("start webview")
         webView = WebView()
-
-        // Create a scene with the WebView
         val scene = Scene(webView, 800.0, 600.0)
-
-        // Set the scene to the primary stage
-        primaryStage.title = "My JavaFX App"
+        primaryStage.title = "WebViewer"
         primaryStage.scene = scene
-
-        // Check if program parameters are provided
         parameters.raw.firstOrNull()?.let { url ->
-            // If URL is provided, load it into the WebView
             Platform.runLater {
                 webView.engine.load(url)
             }
         }
-
-        // Add this instance to the list
         internalWebViewInstances.add(this)
-
-        // Show the primary stage
         primaryStage.show()
     }
 
     fun display(url: String) {
         Platform.runLater {
-            // Create a new instance of InternalWebView
+            logger().info("display webview with url $url")
             val internalWebView = InternalWebView()
-
-            // Create a new stage and set the WebView as its content
             val stage = Stage()
             val newWebView = WebView()
             newWebView.engine.load(url)
             stage.scene = Scene(newWebView, 800.0, 600.0)
             stage.title = "Web Page"
             stage.show()
-
-            // Add the new instance to the list
             internalWebViewInstances.add(internalWebView)
         }
     }
@@ -55,7 +41,7 @@ class InternalWebView : Application() {
         Platform.setImplicitExit(false)
     }
     override fun stop() {
-        // Remove this instance from the list when the stage is closed
+        logger().info("stop webview")
         internalWebViewInstances.remove(this)
     }
 }

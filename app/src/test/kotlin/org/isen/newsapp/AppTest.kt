@@ -4,4 +4,6 @@
 package org.isen.newsapp
 
 class AppTest {
+
+
     }
